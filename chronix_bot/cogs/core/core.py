@@ -2,6 +2,8 @@
 from discord.ext import commands
 import discord
 import time
+from chronix_bot.utils import logger as chronix_logger
+import traceback
 
 
 class Core(commands.Cog):
@@ -14,6 +16,29 @@ class Core(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
         self.start_time = time.time()
+
+    @commands.Cog.listener()
+    async def on_command_error(self, ctx: commands.Context, error: Exception):
+        """Global command error handler for user-friendly messages and logging."""
+        # Log the error to the background writer
+        try:
+            msg = {
+                "type": "command_error",
+                "command": getattr(ctx.command, "qualified_name", None),
+                "user_id": getattr(ctx.author, "id", None),
+                "error": str(error),
+                "trace": traceback.format_exc(),
+            }
+            chronix_logger.enqueue_log(msg)
+        except Exception:
+            pass
+
+        # Friendly message to user
+        try:
+            await ctx.send(embed=discord.Embed(title="Error", description="An error occurred while processing your command."))
+        except Exception:
+            # ignore send errors
+            pass
 
     @commands.Cog.listener()
     async def on_ready(self):

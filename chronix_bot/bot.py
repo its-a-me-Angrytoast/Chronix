@@ -7,6 +7,9 @@ import discord
 from discord.ext import commands
 from discord import Object
 from .config import Settings
+import pkgutil
+import importlib
+import chronix_bot.cogs as cogs_pkg
 
 
 class ChronixBot(commands.Bot):
@@ -15,12 +18,17 @@ class ChronixBot(commands.Bot):
         self.settings = settings
 
     async def setup_hook(self) -> None:
-        # Load core extensions asynchronously at startup
+        # Dynamically load all cogs under chronix_bot.cogs
         try:
-            await self.load_extension("chronix_bot.cogs.core.core")
-            await self.load_extension("chronix_bot.cogs.core.health")
+            for finder, name, ispkg in pkgutil.iter_modules(cogs_pkg.__path__):
+                full = f"chronix_bot.cogs.{name}"
+                try:
+                    await self.load_extension(full)
+                    print(f"Loaded extension: {full}")
+                except Exception as exc:
+                    print(f"Warning: failed to load extension {full}:", exc)
         except Exception as exc:
-            print("Warning: failed to load core cogs at startup:", exc)
+            print("Warning: failed to discover/load cogs at startup:", exc)
 
         # Register a lightweight ping command if not present
         try:

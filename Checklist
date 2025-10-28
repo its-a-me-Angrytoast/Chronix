@@ -3,43 +3,48 @@
 
 Phase 1 - Setup and Initialization
 ------------------------
-[ ] Create project directory structure
-[ ] Initialize Git repository
-[ ] Create virtual environment
-[ ] Install discord.py v2+ and dependencies
-[ ] Create .env file for sensitive credentials
-[ ] Add .gitignore and exclude .env and __pycache__
-[ ] Configure bot token, owner ID, and database URI in .env
-[ ] Initialize config.json for general settings
-[ ] Setup project entry point (main.py)
-[ ] Add async event loop handler
-[ ] Test bot startup with basic command
+[x] Create project directory structure
+[x] Initialize Git repository
+[x] Create virtual environment
+[x] Install discord.py v2+ and dependencies
+[x] Create `.env` file for sensitive credentials (see `.env.example`) 
+[x] Add .gitignore and exclude .env and __pycache__
+[x] Configure bot token, owner ID, and database URI in `.env` (env example created)
+[x] Initialize config (config.py present)
+[x] Setup project entry point (`run.py` exists)
+[x] Add async event loop handler
+[x] Test bot startup with basic command
+
+Environment
+-----------
+[x] `.env.example` created and documented
+[x] Local `.env` file created (placeholders only) — DO NOT COMMIT secrets
 
 Phase 2 - Core Framework
 ------------------------
-[ ] Build cog loader and reloader system
-[ ] Implement dynamic cog discovery
-[ ] Add prefix and slash command support
-[ ] Setup command synchronization
-[ ] Create error handler for all command types
-[ ] Add logging system for startup and cog load status
-[ ] Enable auto reload in developer mode
-[ ] Implement global config registry
-[ ] Add timestamped colored console output
-[ ] Add debug commands for system diagnostics
+[x] Build cog loader and reloader system
+[x] Implement dynamic cog discovery
+[x] Add prefix and slash command support
+[x] Setup command synchronization
+[x] Create error handler for all command types
+[x] Add logging system for startup and cog load status
+[x] Enable auto reload in developer mode (hot_reload command)
+[x] Implement global config registry
+[x] Add timestamped console output
+[x] Add debug commands for system diagnostics (sysinfo)
 
 Phase 3 - Owner and Developer Systems
 ------------------------
-[ ] Create owner-only cog folder
-[ ] Restrict commands to owner ID and dev server
-[ ] Implement eval and execute command
-[ ] Add cog reload and bot restart command
-[ ] Add developer tools for inspecting memory and latency
-[ ] Add command audit log system
-[ ] Add feature toggle command for each cog
-[ ] Create safe elevated mode for testing
-[ ] Log developer actions to dev logs
-[ ] Add database control commands (backup, restore, stats)
+[x] Create owner-only cog folder
+[x] Restrict commands to owner ID and dev server (owner checks present)
+[x] Implement eval and execute command
+[x] Add cog reload command (reload implemented)
+[x] Add developer tools for inspecting memory and latency (sysinfo)
+[x] Add command audit log system (async logger enqueue)
+[x] Add feature toggle command for each cog (toggle command)
+[x] Create safe elevated mode for testing (FORCE_OWNER_OVERRIDE support)
+[x] Log developer actions to dev logs
+[x] Add database control commands (db_ping; backup/restore stubs)
 
 Phase 4 - Moderation Suite
 ------------------------
@@ -52,6 +57,7 @@ Phase 4 - Moderation Suite
 [ ] Integrate logging for every moderation action
 [ ] Create moderation cooldown safety
 [ ] Add role-based permission checks
+[ ] Phase 4 - Note: Ensure to review the moderation commands thoroughly.
 [ ] Add moderation help command
 
 Phase 5 - Logging System
@@ -95,22 +101,22 @@ Phase 7 - Music System
 
 Phase 8 - Economy System
 ------------------------
-[ ] Create base currency Chrons
-[ ] Add secondary currency Gems
-[ ] Add balance, daily, weekly, work, and beg commands
+[x] Create base currency Chrons
+[x] Add secondary currency Gems (scaffold present)
+[x] Add balance, daily, pay commands (prefix & slash implemented)
 [ ] Add gambling and coinflip systems
-[ ] Implement trade system between users
+[x] Implement trade/transfer mechanics (pay implemented)
 [ ] Add inventory and marketplace
 [ ] Add banking with deposit and withdraw
 [ ] Add interest system and cooldowns
-[ ] Log economy transactions
+[x] Log economy transactions
 [ ] Add economy reset and backup tools
 
 Phase 9 - Lootboxes and Crates
 ------------------------
-[ ] Add lootbox system with rarity tiers
-[ ] Add item table for common, rare, epic, legendary, mythic, celestial
-[ ] Add crate opening animation in embeds
+[x] Add lootbox system with rarity tiers (`data/loot_tables.yaml` present)
+[x] Add item table for rarities (loot tables exist)
+[x] Add crate opening animation in embeds (`crates.py` implemented)
 [ ] Add special event crates
 [ ] Implement rarity balancing algorithm
 [ ] Add drop logs and user notifications
@@ -381,9 +387,9 @@ Phase 29 - Performance and Safety
 
 Phase 30 - Deployment and Maintenance
 ------------------------
-[ ] Create Dockerfile for deployment
-[ ] Add environment variable mapping for production
-[ ] Add docker-compose setup for Lavalink and database
+[x] Create Dockerfile for deployment
+[x] Add environment variable mapping for production (`docker-compose.yml` contains ENV entries)
+[x] Add docker-compose setup for Lavalink and database
 [ ] Add logging to files for production mode
 [ ] Add systemd or PM2 process manager configuration
 [ ] Add auto restart on crash

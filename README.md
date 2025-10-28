@@ -30,6 +30,13 @@ python run.py
 
 This will start the bot and a small health HTTP endpoint at `http://0.0.0.0:8080/health`.
 
+Phase 4
+-------
+Development has entered Phase 4 (gameplay). Current work items include gems, pet systems,
+and socketing mechanics. The repo contains a `gems.py` scaffold and crate/hunt flows.
+Use the `Checklist` file at the repo root to track progress; update it whenever you
+complete a task. Create `.env` from `.env.example` and do not commit secrets.
+
 Docker (dev compose)
 
 There is a `docker-compose.yml` that sets up Postgres and a Lavalink stub. Use it to

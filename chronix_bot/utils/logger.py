@@ -51,3 +51,20 @@ def start_background_writer(loop: Optional[asyncio.AbstractEventLoop] = None) ->
 
     loop.create_task(_writer())
     return _queue
+
+
+def enqueue_log(item: object) -> None:
+    """Enqueue a log item for asynchronous writing.
+
+    This will lazily start the background writer if it isn't running yet.
+    """
+    try:
+        loop = asyncio.get_event_loop()
+    except RuntimeError:
+        # No running loop; skip enqueue in this environment
+        loop = None
+
+    if loop is not None:
+        q = start_background_writer(loop)
+        # put_nowait is safe because queue is unbounded in this simple impl
+        q.put_nowait(item)
