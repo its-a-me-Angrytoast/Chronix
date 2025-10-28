@@ -48,16 +48,16 @@ Phase 3 - Owner and Developer Systems
 
 Phase 4 - Moderation Suite
 ------------------------
-[ ] Implement ban, kick, mute, unmute, and timeout commands
-[ ] Add warn, purge, and slowmode commands
-[ ] Add nickname and role editing utilities
-[ ] Add role lock and unlock commands
-[ ] Add temporary mute timer
-[ ] Create confirmation dialogs for mass actions
-[ ] Integrate logging for every moderation action
-[ ] Create moderation cooldown safety
-[ ] Add role-based permission checks
-[ ] Phase 4 - Note: Ensure to review the moderation commands thoroughly.
+[x] Implement ban, kick, mute, unmute, and timeout commands
+[x] Add warn, purge, and slowmode commands
+[x] Add nickname and role editing utilities
+[x] Add role lock and unlock commands
+[x] Add temporary mute timer
+[x] Create confirmation dialogs for mass actions
+[x] Integrate logging for every moderation action
+[x] Create moderation cooldown safety
+[x] Add role-based permission checks
+[x] Phase 4 - Note: Ensure to review the moderation commands thoroughly.
 [ ] Add moderation help command
 
 Phase 5 - Logging System
@@ -385,7 +385,26 @@ Phase 29 - Performance and Safety
 [ ] Add performance profiling tools
 [ ] Add system health report command
 
-Phase 30 - Deployment and Maintenance
+Phase 30 - Help Command System
+------------------------
+[ ] Create base help command group with prefix and slash command support
+[ ] Categorize commands by cog or module automatically
+[ ] Add chro help to display all available command categories
+[ ] Format output using embeds with category headers and short command descriptions
+[ ] Add command to display aliases for each entry
+[ ] Add detailed view for chro help <command name>
+[ ] Show command usage syntax with parameters and examples
+[ ] Include description of functions or purpose of command
+[ ] Add optional warnings or cooldown notes if defined in command attributes
+[ ] Support pagination or scrolling for large category lists
+[ ] Add developer override for hidden commands and debug tools
+[ ] Include error handling for invalid or missing command names
+[ ] Add caching or lazy loading for command lists to improve performance
+[ ] Add configuration toggle to hide or show owner-only and dev-only commands
+[ ] Log help command usage for analytics or feedback tracking
+
+
+Phase 31 - Deployment and Maintenance
 ------------------------
 [x] Create Dockerfile for deployment
 [x] Add environment variable mapping for production (`docker-compose.yml` contains ENV entries)
