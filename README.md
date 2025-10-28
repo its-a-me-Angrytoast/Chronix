@@ -73,6 +73,18 @@ Notes
 	raise runtime errors if you try to use them; consider creating a local
 	Postgres instance for full testing.
 
+Integration test
+
+There's a small integration harness that will bring up Postgres (docker compose),
+apply the schema, and run the DB-backed integration test:
+
+```bash
+./scripts/run_integration_db_test.sh
+```
+
+This requires Docker and Docker Compose to be installed and the project's
+virtualenv to be prepared (`python -m venv chronix.venv && ./chronix.venv/bin/pip install -r requirements.txt`).
+
 
 Phases
 

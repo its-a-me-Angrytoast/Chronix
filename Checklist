@@ -28,6 +28,7 @@ PHASE 2 - DB LAYER AND MODELS (NO MIGRATIONS)
 [x] Document schema in docs/schema.md (no migrations yet)
 [x] Confirm imports and pool creation succeed
 [x] Add in-memory fallback for dev when Postgres not available
+[x] Add Postgres integration test harness (docker-compose + script)
 
 PHASE 3 - ECONOMY SYSTEM (CHRONS)
 ---------------------------------

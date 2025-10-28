@@ -4,6 +4,13 @@ This script spawns concurrent tasks to simulate multiple simultaneous debit/cred
 operations and verifies final balance. Run with the project's venv python.
 """
 import asyncio
+import sys
+import pathlib
+
+# Ensure repository root is on sys.path so imports work when running this script
+ROOT = pathlib.Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(ROOT))
+
 from chronix_bot.utils import db
 
 
