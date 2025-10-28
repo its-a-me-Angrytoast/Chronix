@@ -13,6 +13,7 @@ from discord import app_commands
 
 from chronix_bot.utils import helpers
 from chronix_bot.utils import db as db_utils
+from chronix_bot.utils import inventory as inv
 
 
 class GemConfirmView(discord.ui.View):
@@ -50,11 +51,17 @@ class Gems(commands.Cog):
     @commands.command(name="gems", aliases=["g", "inventory"])
     async def gems(self, ctx: commands.Context) -> None:
         """View your gem collection."""
-        # For now just show a placeholder - will query DB in Phase 15
-        embed = helpers.make_embed(
-            f"{ctx.author.name}'s Gems {helpers.EMOJI['gems']}",
-            "No gems yet! Try using the hunt command to find some."
-        )
+        gems = inv.list_gems(ctx.author.id)
+        if not gems:
+            embed = helpers.make_embed(
+                f"{ctx.author.name}'s Gems {helpers.EMOJI['gems']}",
+                "No gems yet! Try using the hunt command to find some."
+            )
+            await ctx.send(embed=embed)
+            return
+
+        lines = [f"ID:{g['gem_id']} - {g['gem_type']} (Power {g['power']})" for g in gems]
+        embed = helpers.make_embed(f"{ctx.author.name}'s Gems {helpers.EMOJI['gems']}", "\n".join(lines))
         await ctx.send(embed=embed)
 
     @commands.command(name="merge", aliases=["combine", "upgrade"])
@@ -71,21 +78,27 @@ class Gems(commands.Cog):
         if not view.confirmed:
             return
         
-        # Placeholder success message - will do actual merging in Phase 15
-        embed = helpers.make_embed(
-            "Gem Merge", 
-            f"Successfully merged your {gem_name} gems into a higher tier!"
-        )
+        try:
+            new = inv.merge_gems(ctx.author.id, gem_name, count=2)
+        except ValueError as e:
+            await ctx.send(str(e))
+            return
+        embed = helpers.make_embed("Gem Merge Success", f"Created {new['gem_type']} (Power {new['power']}) — ID: {new['gem_id']}")
         await ctx.send(embed=embed)
 
     @app_commands.command(name="gems")
     async def slash_gems(self, interaction: discord.Interaction) -> None:
         """View your gem collection."""
-        # For now just show a placeholder - will query DB in Phase 15
-        embed = helpers.make_embed(
-            f"{interaction.user.name}'s Gems {helpers.EMOJI['gems']}",
-            "No gems yet! Try using the hunt command to find some."
-        )
+        gems = inv.list_gems(interaction.user.id)
+        if not gems:
+            embed = helpers.make_embed(
+                f"{interaction.user.name}'s Gems {helpers.EMOJI['gems']}",
+                "No gems yet! Try using the hunt command to find some."
+            )
+            await interaction.response.send_message(embed=embed)
+            return
+        lines = [f"ID:{g['gem_id']} - {g['gem_type']} (Power {g['power']})" for g in gems]
+        embed = helpers.make_embed(f"{interaction.user.name}'s Gems {helpers.EMOJI['gems']}", "\n".join(lines))
         await interaction.response.send_message(embed=embed)
         
     @app_commands.command(name="merge")
@@ -104,9 +117,10 @@ class Gems(commands.Cog):
         if not view.confirmed:
             return
         
-        # Placeholder success message - will do actual merging in Phase 15
-        embed = helpers.make_embed(
-            "Gem Merge", 
-            f"Successfully merged your {gem_name} gems into a higher tier!"
-        )
+        try:
+            new = inv.merge_gems(interaction.user.id, gem_name, count=2)
+        except ValueError as e:
+            await interaction.followup.send(str(e), ephemeral=True)
+            return
+        embed = helpers.make_embed("Gem Merge Success", f"Created {new['gem_type']} (Power {new['power']}) — ID: {new['gem_id']}")
         await interaction.followup.send(embed=embed)
