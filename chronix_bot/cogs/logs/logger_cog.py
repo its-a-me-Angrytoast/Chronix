@@ -173,9 +173,9 @@ class LoggerCog(commands.Cog):
                     continue
                 ch = guild.get_channel(int(ch_id))
                 if ch:
-                    self.bot.loop.create_task(ch.send(embed=helpers.make_embed("Unhandled Error", f"Event: {event_method}\n```
-{tb[:1900]}
-```")))
+                    desc = "Event: {}\n```{}\n```".format(event_method, tb[:1900])
+                    embed = helpers.make_embed("Unhandled Error", desc)
+                    self.bot.loop.create_task(ch.send(embed=embed))
             except Exception:
                 pass
         # also enqueue to async writer
