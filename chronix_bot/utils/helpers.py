@@ -26,3 +26,8 @@ def make_embed(title: str, description: str, colour: Optional[int] = None) -> di
 def latency_embed(latency_ms: int) -> discord.Embed:
     return make_embed("Pong!", f"Latency: {latency_ms}ms")
 
+
+def format_chrons(amount: int) -> str:
+    """Format a chron amount with emoji."""
+    return f"{EMOJI['chrons']} {amount}"
+

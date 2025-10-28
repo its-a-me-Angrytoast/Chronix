@@ -1,133 +1,395 @@
-# Refer to this file for commits
-==========================================================================
 
-PHASE 0 - REPO AND BOOTSTRAP
-----------------------------
-[x] Initialize GitHub repo and .gitignore
-[x] Create .env.example, README.md, pyproject.toml or requirements.txt
-[x] Add Dockerfile and docker-compose.yml (Postgres + Lavalink + Chronix)
-[x] Write run.py entrypoint
-[x] Make folder tree under chronix_bot/ (utils, cogs, dashboard)
-[x] Implement config.py with pydantic/env parser
-[x] Implement utils/logger.py and utils/db.py (stubbed pool, no migrations)
-[x] Test python run.py launches bot skeleton
+**Chronix Bot Development Checklist**
 
-PHASE 1 - CORE COGS AND STARTUP
--------------------------------
-[x] Create cogs/core/core.py with /ping, /uptime, reload/load commands
-[x] Create cogs/core/health.py with aiohttp health endpoint
-[x] Add permission checks in utils/perms.py
-[x] Implement embed helpers in utils/helpers.py
-[x] Verify owner reload commands work
+Phase 1 - Setup and Initialization
+------------------------
+[ ] Create project directory structure
+[ ] Initialize Git repository
+[ ] Create virtual environment
+[ ] Install discord.py v2+ and dependencies
+[ ] Create .env file for sensitive credentials
+[ ] Add .gitignore and exclude .env and __pycache__
+[ ] Configure bot token, owner ID, and database URI in .env
+[ ] Initialize config.json for general settings
+[ ] Setup project entry point (main.py)
+[ ] Add async event loop handler
+[ ] Test bot startup with basic command
 
-PHASE 2 - DB LAYER AND MODELS (NO MIGRATIONS)
----------------------------------------------
-[x] Expand utils/db.py for asyncpg pool and safe transaction wrappers
-[x] Add atomic safe_execute_money_transaction()
-[x] Define dataclasses in utils/models.py for all major entities
-[x] Document schema in docs/schema.md (no migrations yet)
-[x] Confirm imports and pool creation succeed
-[x] Add in-memory fallback for dev when Postgres not available
-[x] Add Postgres integration test harness (docker-compose + script)
+Phase 2 - Core Framework
+------------------------
+[ ] Build cog loader and reloader system
+[ ] Implement dynamic cog discovery
+[ ] Add prefix and slash command support
+[ ] Setup command synchronization
+[ ] Create error handler for all command types
+[ ] Add logging system for startup and cog load status
+[ ] Enable auto reload in developer mode
+[ ] Implement global config registry
+[ ] Add timestamped colored console output
+[ ] Add debug commands for system diagnostics
 
-PHASE 3 - ECONOMY SYSTEM (CHRONS)
----------------------------------
-[ ] Implement cogs/economy/economy.py with /balance, /pay, /daily
-[ ] Hook into transaction helpers
-[ ] Add cooldowns and abuse protections
-[ ] Test in dev guild
+Phase 3 - Owner and Developer Systems
+------------------------
+[ ] Create owner-only cog folder
+[ ] Restrict commands to owner ID and dev server
+[ ] Implement eval and execute command
+[ ] Add cog reload and bot restart command
+[ ] Add developer tools for inspecting memory and latency
+[ ] Add command audit log system
+[ ] Add feature toggle command for each cog
+[ ] Create safe elevated mode for testing
+[ ] Log developer actions to dev logs
+[ ] Add database control commands (backup, restore, stats)
 
-PHASE 4 - GAMEPLAY BASICS
--------------------------
-[ ] hunt.py: hunt command and loot tables
-[ ] crates.py: crate opening flow
-[ ] gems.py: gem inventory and merging
-[ ] pets.py: pet register, train, feed, show
-[ ] Create YAMLs: loot_tables.yaml, crate_pools.yaml, pets.yaml
-[ ] Validate embeds and RNG flow
+Phase 4 - Moderation Suite
+------------------------
+[ ] Implement ban, kick, mute, unmute, and timeout commands
+[ ] Add warn, purge, and slowmode commands
+[ ] Add nickname and role editing utilities
+[ ] Add role lock and unlock commands
+[ ] Add temporary mute timer
+[ ] Create confirmation dialogs for mass actions
+[ ] Integrate logging for every moderation action
+[ ] Create moderation cooldown safety
+[ ] Add role-based permission checks
+[ ] Add moderation help command
 
-PHASE 5 - AUTOHUNT SCHEDULER
-----------------------------
-[ ] Implement autohunt.py scheduler with enable/disable commands
-[ ] Batch processing and atomic debits
-[ ] Live embed updates
-[ ] DM user on insufficient funds
-[ ] Verify scheduler loop runs without blocking
+Phase 5 - Logging System
+------------------------
+[ ] Create log channels for moderation, message, and server
+[ ] Add embed-based formatted logs
+[ ] Implement audit log augmentation for missed Discord actions
+[ ] Log message edits and deletions
+[ ] Log joins, leaves, and bans
+[ ] Add server update logs (roles, channels)
+[ ] Add error log channel for uncaught exceptions
+[ ] Add log creation command for automatic setup
+[ ] Add option to enable or disable categories
+[ ] Backup logs to database or file
 
-PHASE 6 - BATTLE ENGINE AND WEAPONS
------------------------------------
-[ ] battles.py: turn-based PvP/PvE battles
-[ ] weapons.py: equip and enhance commands
-[ ] Extend gems.py for socketing
-[ ] Add docs/balance.md for formulas
-[ ] Test full 1v1 battle flow
+Phase 6 - Utility and Miscellaneous Commands
+------------------------
+[ ] Add serverinfo, userinfo, and roleinfo commands
+[ ] Add avatar, banner, and emojiinfo
+[ ] Implement poll, reminder, and timer commands
+[ ] Add text translation and dictionary lookups
+[ ] Add weather and fact APIs
+[ ] Add math and conversion tools
+[ ] Add say and embed commands
+[ ] Add randomcolor, choose, and roll utilities
+[ ] Integrate external APIs (Wikipedia, Urban Dictionary)
+[ ] Style all responses with embeds and buttons
 
-PHASE 7 - CLANS AND TREASURY
------------------------------
-[ ] clans.py: create, join, leave, deposit, withdraw, perks
-[ ] Treasury uses DB transaction helper
-[ ] Add clan_perks.yaml config
-[ ] Check deposit/withdraw logging
+Phase 7 - Music System
+------------------------
+[ ] Setup Lavalink or Wavelink connection
+[ ] Add YouTube, Spotify, and SoundCloud sources
+[ ] Add play, pause, skip, stop, and shuffle commands
+[ ] Add interactive queue view with persistent UI
+[ ] Add lyrics fetching via API
+[ ] Add DJ role permissions for playback controls
+[ ] Implement volume and equalizer controls
+[ ] Add song requester tracking
+[ ] Add music log entries for events
+[ ] Add error recovery for disconnected players
 
-PHASE 8 - MODERATION AND LOGGING
---------------------------------
-[ ] moderation.py: warn, mute, massban commands
-[ ] logger_cog.py: message, role, voice event logging
-[ ] Implement chro create-logs (owner and admin variants)
-[ ] Enable file and DB queue logging
-[ ] Confirm logs post correctly
+Phase 8 - Economy System
+------------------------
+[ ] Create base currency Chrons
+[ ] Add secondary currency Gems
+[ ] Add balance, daily, weekly, work, and beg commands
+[ ] Add gambling and coinflip systems
+[ ] Implement trade system between users
+[ ] Add inventory and marketplace
+[ ] Add banking with deposit and withdraw
+[ ] Add interest system and cooldowns
+[ ] Log economy transactions
+[ ] Add economy reset and backup tools
 
-PHASE 9 - TICKETS AND ANNOUNCEMENTS
------------------------------------
-[ ] tickets.py: setup wizard, claim, close, transcript
-[ ] announce.py: builder wizard, preview, schedule
-[ ] Add wizard helpers in utils/helpers.py
-[ ] Verify preview and confirm flows
+Phase 9 - Lootboxes and Crates
+------------------------
+[ ] Add lootbox system with rarity tiers
+[ ] Add item table for common, rare, epic, legendary, mythic, celestial
+[ ] Add crate opening animation in embeds
+[ ] Add special event crates
+[ ] Implement rarity balancing algorithm
+[ ] Add drop logs and user notifications
+[ ] Add crate gift command
+[ ] Add limited-time seasonal crates
+[ ] Add inventory item display command
+[ ] Add crate marketplace integration
 
-PHASE 10 - MUSIC (LAVALINK/WAVELINK)
-------------------------------------
-[ ] music.py: connect node, queue controls, buttons
-[ ] Implement DJ role check in utils/perms.py
-[ ] Document Lavalink setup in README
-[ ] Test in-memory queue and embeds
+Phase 10 - Pets System
+------------------------
+[ ] Create pet data structure with traits and rarity
+[ ] Add adopt and release commands
+[ ] Add feeding and leveling mechanics
+[ ] Add evolution system based on XP and rarity
+[ ] Add PvE and PvP battles
+[ ] Add pet stats and battle commands
+[ ] Add clan battle integration
+[ ] Add leaderboard for pets and trainers
+[ ] Add pet logs for wins and losses
+[ ] Add random event system for pet discovery
 
-PHASE 11 - CHESS AND FEEDS
---------------------------
-[ ] chess.py: local chess with board render
-[ ] rss.py: feed registration and poller
-[ ] youtube.py: YouTube poller via API key
-[ ] Create assets/templates/chess_board.py
-[ ] Manual trigger test for feeds
+Phase 11 - Weapons and Battle System
+------------------------
+[ ] Add weapon categories with damage multipliers
+[ ] Add elemental types (Fire, Ice, Shadow)
+[ ] Add weapon crafting and upgrading system
+[ ] Add equip, unequip, and inspect commands
+[ ] Implement turn-based battle system
+[ ] Add enemy generation and loot system
+[ ] Add team and clan-based combat modes
+[ ] Add cooperative raid battles
+[ ] Add animation-style embed turns
+[ ] Add experience and rewards for battle wins
 
-PHASE 12 - AI HOOKS (GEMINI)
-----------------------------
-[ ] gemini_client.py: AIClient abstraction
-[ ] ai_demo.py: /ai generate and /ai summarize commands
-[ ] Add opt-in logic in config and helpers
-[ ] Validate fallback when API key missing
+Phase 12 - AI Integration
+------------------------
+[ ] Integrate Gemini API for text generation
+[ ] Add /ask, /explain, /summarize commands
+[ ] Add roleplay or simulation channels
+[ ] Add auto-response AI for selected channels
+[ ] Add AI moderation assistant for TOS violations
+[ ] Add AI image generation using Gemini Vision
+[ ] Add per-guild AI assistant mode
+[ ] Add prompt sanitization for safety
+[ ] Add response logging for moderation review
+[ ] Add cooldown and usage limits for AI features
 
-PHASE 13 - DASHBOARD SCAFFOLD
------------------------------
-[ ] Create dashboard folder with FastAPI endpoints
-[ ] Add owner confirmation webhook
-[ ] Add JWT or shared secret for dashboard authentication
-[ ] Verify confirm flow in dev mode
+Phase 13 - XP and Leveling System
+------------------------
+[ ] Implement XP tracking per user
+[ ] Add configurable XP rate and cooldowns
+[ ] Add level up messages with banners
+[ ] Add role rewards every 5 levels
+[ ] Add XP multipliers for boosters and veterans
+[ ] Add leaderboard for top XP users
+[ ] Add XP decay prevention system
+[ ] Add message spam protection
+[ ] Add global XP leaderboard
+[ ] Add XP reset and backup tools
 
-PHASE 14 - POLISH, ALIASES, AND DOCS
-------------------------------------
-[ ] Add alias registry and docs/aliases.md
-[ ] Add docs/configuration.md and docs/balance.md
-[ ] Standardize embed templates
-[ ] Add error handlers and friendly messages
-[ ] Ensure all commands have slash and prefix aliases
+Phase 14 - Announcement System
+------------------------
+[ ] Add announcement builder with UI
+[ ] Add title, description, image, and role mentions
+[ ] Add template themes for updates, alerts, and info
+[ ] Add preview mode before posting
+[ ] Add scheduling and recurring announcements
+[ ] Add cross-server broadcast option
+[ ] Add admin-only access
+[ ] Add history logs for past announcements
+[ ] Add embed styling tools
+[ ] Add automation trigger system
 
-PHASE 15 - TESTS, MIGRATIONS, CI, AND RELEASE
----------------------------------------------
-[ ] Generate migrations from docs/schema.md
-[ ] Add unit tests for loot, battle, transactions, and autohunt
-[ ] Create GitHub Actions workflow .github/workflows/ci.yml
-[ ] Build Docker image and test compose stack
-[ ] Apply migrations and confirm schema correctness
-[ ] Tag and release version 1.0.0
+Phase 15 - Invite Tracker
+------------------------
+[ ] Implement invite tracking with stats
+[ ] Track invite creation, deletion, and vanity updates
+[ ] Add leaderboard for top inviters
+[ ] Add reward system for milestones
+[ ] Add fake and leave detection
+[ ] Add invite log channel
+[ ] Add invite cache persistence
+[ ] Add integration with welcomer
+[ ] Add reset and clear invite data commands
+[ ] Add cross-server invite sync
+
+Phase 16 - Welcome System
+------------------------
+[ ] Add customizable welcome messages
+[ ] Add farewell messages for leaving members
+[ ] Add DM welcomes with server introduction
+[ ] Add auto role assignment for new members
+[ ] Add banner image generation using PIL or API
+[ ] Add personalized variables (username, join count, inviter)
+[ ] Add configuration panel for messages
+[ ] Add welcome XP boost option
+[ ] Add starter kit or gift system
+[ ] Add logs for joins and leaves
+
+Phase 17 - Temporary Channels and VC System
+------------------------
+[ ] Add panel to create temporary voice and text channels
+[ ] Add auto-deletion for inactive temp channels
+[ ] Add custom naming pattern using username
+[ ] Add category-based segregation for temp channels
+[ ] Add persistence toggle for reusable channels
+[ ] Add creation and deletion logs
+[ ] Add participant tracking for temporary VCs
+[ ] Add limit controls for max channels per user
+[ ] Add voice activity tracking for XP rewards
+[ ] Add cleanup script for orphaned channels
+
+Phase 18 - Dashboard and Web Integration
+------------------------
+[ ] Build FastAPI or Flask backend
+[ ] Add OAuth2 login with Discord
+[ ] Add role-based permissions for Admin, Owner, and Developer
+[ ] Add dashboard for cog toggles
+[ ] Add configuration panels for XP, Economy, and Roles
+[ ] Add moderation log viewer
+[ ] Add announcement creation module
+[ ] Add live database stats and cache viewer
+[ ] Add restart and reload control from dashboard
+[ ] Add logging for all dashboard actions
+
+Phase 19 - Chess System
+------------------------
+[ ] Integrate Chess.com API
+[ ] Add account linking via OAuth
+[ ] Add play vs player and play vs bot commands
+[ ] Add in-server chessboard with interactive buttons
+[ ] Add match tracking and move validation
+[ ] Add ELO synchronization with external API
+[ ] Add leaderboard and stats commands
+[ ] Add challenge and accept system
+[ ] Add resign and draw commands
+[ ] Add live board updates in embed format
+
+Phase 20 - YouTube Integration
+------------------------
+[ ] Add YouTube channel tracking using RSS
+[ ] Add video upload detection and notifications
+[ ] Add live stream start and end announcements
+[ ] Add configurable announcement channel
+[ ] Add thumbnail and video title embeds
+[ ] Add customizable message templates
+[ ] Add channel management commands
+[ ] Add multiple channel tracking per guild
+[ ] Add error recovery for broken feeds
+[ ] Add periodic refresh scheduler
+
+Phase 21 - RSS Feed Tracker
+------------------------
+[ ] Add system to register and remove RSS feeds
+[ ] Add parsing engine for XML feeds
+[ ] Add feed update notifier in designated channels
+[ ] Add embedded summaries with links
+[ ] Add keyword filtering for alerts
+[ ] Add feed-specific cooldown and caching
+[ ] Add error logs for invalid URLs
+[ ] Add command to list and edit tracked feeds
+[ ] Add feed category tags
+[ ] Add global feed backup and restore
+
+Phase 22 - News and Social Integrations
+------------------------
+[ ] Add Reddit integration for subreddit updates
+[ ] Add Twitter or X API integration for account tracking
+[ ] Add Steam API integration for game news
+[ ] Add keyword filters for content matching
+[ ] Add announcement embeds for updates
+[ ] Add post reaction buttons for sharing
+[ ] Add cross-posting to multiple channels
+[ ] Add global social media toggle
+[ ] Add database persistence for feed states
+[ ] Add error handling for API downtime
+
+Phase 23 - Event System
+------------------------
+[ ] Add event creation command
+[ ] Add recurring event scheduling
+[ ] Add RSVP system with reactions
+[ ] Add event reminders and start notifications
+[ ] Add configurable XP or reward bonuses
+[ ] Add event cancellation and edit commands
+[ ] Add calendar integration
+[ ] Add event role assignment
+[ ] Add event leaderboard tracking participation
+[ ] Add event logs and summaries
+
+Phase 24 - Giveaways System
+------------------------
+[ ] Add timed giveaway creation
+[ ] Add requirements such as roles or XP levels
+[ ] Add multi-winner support
+[ ] Add reroll command for expired giveaways
+[ ] Add entry reaction system
+[ ] Add embedded display with countdown
+[ ] Add scheduled start and end time control
+[ ] Add winner announcement embeds
+[ ] Add audit logs for giveaway results
+[ ] Add giveaway archiving and statistics
+
+Phase 25 - Ticket System
+------------------------
+[ ] Add ticket creation button panel
+[ ] Add ticket category configuration
+[ ] Add staff claim command
+[ ] Add ticket closing and logging system
+[ ] Add custom transcript generation
+[ ] Add user-limited ticket count
+[ ] Add escalation command for senior staff
+[ ] Add role-based access control
+[ ] Add ticket auto-expiration after inactivity
+[ ] Add database record for all ticket data
+
+Phase 26 - Auto Roles and Reaction Roles
+------------------------
+[ ] Add reaction role panel creation
+[ ] Add support for single and multiple modes
+[ ] Add emoji selection for each role
+[ ] Add command for reaction role deletion
+[ ] Add auto role on join system
+[ ] Add hybrid role assignment via dropdowns
+[ ] Add persistent message tracking
+[ ] Add backup and restore for role panels
+[ ] Add reaction role logs
+[ ] Add server limit for maximum panels
+
+Phase 27 - Custom Commands and Tags
+------------------------
+[ ] Add custom text command creation
+[ ] Add image and media command support
+[ ] Add tag search and list commands
+[ ] Add tag editing and deletion
+[ ] Add admin approval mode
+[ ] Add tag ownership tracking
+[ ] Add global and server-specific tags
+[ ] Add command to import and export tags
+[ ] Add tag cooldowns to prevent spam
+[ ] Add tag usage statistics
+
+Phase 28 - UI and UX Enhancements
+------------------------
+[ ] Style all embeds with consistent color themes
+[ ] Add pagination for long lists
+[ ] Add buttons and dropdowns for menu systems
+[ ] Add loading indicators for long tasks
+[ ] Add smooth interaction timing for realism
+[ ] Add error and success feedback embeds
+[ ] Add adaptive layout for mobile Discord
+[ ] Add consistent icon usage across embeds
+[ ] Add emoji placeholders for readability
+[ ] Add accessibility adjustments for color contrast
+
+Phase 29 - Performance and Safety
+------------------------
+[ ] Add async task scheduling system
+[ ] Add rate limit handling and retries
+[ ] Add cache system with Redis optional
+[ ] Add backup and recovery tasks
+[ ] Add uptime tracking and reporting
+[ ] Add memory usage monitoring
+[ ] Add fail-safe reboot recovery
+[ ] Add redundant error catching
+[ ] Add performance profiling tools
+[ ] Add system health report command
+
+Phase 30 - Deployment and Maintenance
+------------------------
+[ ] Create Dockerfile for deployment
+[ ] Add environment variable mapping for production
+[ ] Add docker-compose setup for Lavalink and database
+[ ] Add logging to files for production mode
+[ ] Add systemd or PM2 process manager configuration
+[ ] Add auto restart on crash
+[ ] Add health check endpoint
+[ ] Add version tagging and changelog system
+[ ] Add scheduled backup jobs
+[ ] Add CI/CD integration for automatic updates
 
 END OF CHECKLIST
