@@ -1,0 +1,35 @@
+version: '3.8'
+services:
+  postgres:
+    image: postgres:15
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: chronix
+      POSTGRES_PASSWORD: chronixpass
+      POSTGRES_DB: chronix
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+  lavalink:
+    image: fredboat/lavalink:latest
+    restart: unless-stopped
+    ports:
+      - "2333:2333"
+    environment:
+      LAVALINK_SERVER: "0.0.0.0"
+
+  chronix:
+    build: .
+    depends_on:
+      - postgres
+      - lavalink
+    environment:
+      TOKEN: "${TOKEN:-}"
+      OWNER_ID: "${OWNER_ID:-}"
+    ports:
+      - "8080:8080"
+
+volumes:
+  postgres_data:

@@ -1,3 +1,18 @@
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+.mypy_cache/
+.env
+.env.*
+dist/
+build/
+*.egg-info/
+/.vscode/
+/.idea/
+*.pyc
+uploads/
+migrations/
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[codz]
@@ -137,7 +152,7 @@ celerybeat.pid
 # Environments
 .env
 .envrc
-.venv
+chronix.venv
 env/
 venv/
 ENV/

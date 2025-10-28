@@ -1,15 +1,15 @@
-CHRONIX DEVELOPMENT CHECKLIST (CHRONOLOGICAL, NO MIGRATIONS UNTIL FINAL PHASE)
+# Refer to this file for commits
 ==========================================================================
 
 PHASE 0 - REPO AND BOOTSTRAP
 ----------------------------
-[ ] Initialize GitHub repo and .gitignore
-[ ] Create .env.example, README.md, pyproject.toml or requirements.txt
-[ ] Add Dockerfile and docker-compose.yml (Postgres + Lavalink + Chronix)
-[ ] Write run.py entrypoint
-[ ] Make folder tree under chronix_bot/ (utils, cogs, dashboard)
-[ ] Implement config.py with pydantic/env parser
-[ ] Implement utils/logger.py and utils/db.py (stubbed pool, no migrations)
+[x] Initialize GitHub repo and .gitignore
+[x] Create .env.example, README.md, pyproject.toml or requirements.txt
+[x] Add Dockerfile and docker-compose.yml (Postgres + Lavalink + Chronix)
+[x] Write run.py entrypoint
+[x] Make folder tree under chronix_bot/ (utils, cogs, dashboard)
+[x] Implement config.py with pydantic/env parser
+[x] Implement utils/logger.py and utils/db.py (stubbed pool, no migrations)
 [ ] Test python run.py launches bot skeleton
 
 PHASE 1 - CORE COGS AND STARTUP
