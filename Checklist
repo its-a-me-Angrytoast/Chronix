@@ -89,7 +89,7 @@ Phase 6 - Utility and Miscellaneous Commands
 Phase 7 - Music System
 ------------------------
 [ ] Setup Lavalink or Wavelink connection
-[ ] Add YouTube, Spotify, and SoundCloud sources
+[ ] Add YouTube, and Spotify support and update both .env and .env.example
 [ ] Add play, pause, skip, stop, and shuffle commands
 [ ] Add interactive queue view with persistent UI
 [ ] Add lyrics fetching via API
