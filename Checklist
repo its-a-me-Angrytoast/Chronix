@@ -70,7 +70,8 @@ Phase 5 - Logging System
 [x] Add server update logs (roles, channels)
 [x] Add error log channel for uncaught exceptions
 [x] Add log creation command for automatic setup
-[ ] Add option to enable or disable categories
+[x] Add option to enable or disable categories
+[x] Add slash-command parity for create-logs and add `logs-view` and `logs-toggle`
 [x] Backup logs to database or file (written to data/log_configs.json and async queue)
 
 Phase 6 - Utility and Miscellaneous Commands
