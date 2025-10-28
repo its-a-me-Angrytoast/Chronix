@@ -1,0 +1,186 @@
+"""Logging cog: listens for message edits/deletes, joins/leaves, bans, and guild updates.
+
+Creates log channels via a `chro create-logs` command and writes structured
+entries to those channels and the async logger queue in `chronix_bot.utils.logger`.
+"""
+from __future__ import annotations
+
+import json
+import traceback
+from pathlib import Path
+from typing import Optional
+
+import discord
+from discord.ext import commands
+
+from chronix_bot.utils import logger as chronix_logger
+from chronix_bot.utils import helpers
+
+
+DATA_PATH = Path.cwd() / "data"
+LOG_CONFIG_FILE = DATA_PATH / "log_configs.json"
+
+
+def _load_configs() -> dict:
+    if not LOG_CONFIG_FILE.exists():
+        return {}
+    try:
+        return json.loads(LOG_CONFIG_FILE.read_text(encoding="utf-8"))
+    except Exception:
+        return {}
+
+
+def _save_configs(cfg: dict) -> None:
+    DATA_PATH.mkdir(parents=True, exist_ok=True)
+    LOG_CONFIG_FILE.write_text(json.dumps(cfg, indent=2), encoding="utf-8")
+
+
+class LoggerCog(commands.Cog):
+    """Cog that routes important server events into configured log channels."""
+
+    def __init__(self, bot: commands.Bot):
+        self.bot = bot
+        self._configs = _load_configs()  # guild_id -> {"moderation": id, "messages": id, ...}
+
+    # ---- helpers
+    def _get_channel(self, guild: discord.Guild, kind: str) -> Optional[discord.TextChannel]:
+        cfg = self._configs.get(str(guild.id), {})
+        cid = cfg.get(kind)
+        if not cid:
+            return None
+        return guild.get_channel(int(cid))
+
+    def _log_queue(self, payload: object) -> None:
+        try:
+            chronix_logger.enqueue_log(payload)
+        except Exception:
+            pass
+
+    def _send_to_channel(self, guild: discord.Guild, kind: str, embed: discord.Embed):
+        ch = self._get_channel(guild, kind)
+        if ch is None:
+            return
+        # fire-and-forget send
+        try:
+            self.bot.loop.create_task(ch.send(embed=embed))
+        except Exception:
+            pass
+
+    # ---- commands
+    @commands.command(name="create-logs")
+    @commands.has_permissions(manage_guild=True)
+    async def create_logs(self, ctx: commands.Context):
+        """Create standardized log channels for this guild (moderation, messages, server, errors)."""
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command must be used in a server.")
+            return
+        names = {
+            "moderation": "moderation-logs",
+            "messages": "message-logs",
+            "server": "server-logs",
+            "errors": "error-logs",
+        }
+        created = {}
+        for key, name in names.items():
+            # try to find existing channel
+            ch = discord.utils.get(guild.text_channels, name=name)
+            if ch is None:
+                try:
+                    ch = await guild.create_text_channel(name, reason="Chronix log channel creation")
+                except Exception:
+                    ch = None
+            if ch:
+                created[key] = ch.id
+
+        if str(guild.id) not in self._configs:
+            self._configs[str(guild.id)] = {}
+        self._configs[str(guild.id)].update(created)
+        _save_configs(self._configs)
+
+        await ctx.send(embed=helpers.make_embed("Log channels created", f"Created/registered channels: {', '.join(created.keys())}"))
+        self._log_queue({"type": "create_logs", "guild": guild.id, "created": created, "by": ctx.author.id})
+
+    # ---- event listeners
+    @commands.Cog.listener()
+    async def on_message_delete(self, message: discord.Message):
+        if message.author.bot:
+            return
+        guild = message.guild
+        if not guild:
+            return
+        desc = f"Message deleted in {message.channel.mention} by {message.author.mention}\nContent: {message.content!r}"
+        embed = helpers.make_embed("Message Deleted", desc)
+        self._send_to_channel(guild, "messages", embed)
+        self._log_queue({"type": "message_delete", "guild": guild.id, "author": message.author.id, "channel": message.channel.id, "content": message.content})
+
+    @commands.Cog.listener()
+    async def on_message_edit(self, before: discord.Message, after: discord.Message):
+        if before.author.bot:
+            return
+        guild = before.guild
+        if not guild:
+            return
+        if before.content == after.content:
+            return
+        desc = (
+            f"Message edited in {before.channel.mention} by {before.author.mention}\n"
+            f"Before: {before.content!r}\nAfter: {after.content!r}"
+        )
+        embed = helpers.make_embed("Message Edited", desc)
+        self._send_to_channel(guild, "messages", embed)
+        self._log_queue({"type": "message_edit", "guild": guild.id, "author": before.author.id, "channel": before.channel.id, "before": before.content, "after": after.content})
+
+    @commands.Cog.listener()
+    async def on_member_join(self, member: discord.Member):
+        guild = member.guild
+        embed = helpers.make_embed("Member Joined", f"{member.mention} joined the server.")
+        self._send_to_channel(guild, "server", embed)
+        self._log_queue({"type": "member_join", "guild": guild.id, "user": member.id})
+
+    @commands.Cog.listener()
+    async def on_member_remove(self, member: discord.Member):
+        guild = member.guild
+        embed = helpers.make_embed("Member Left", f"{member.mention} left or was removed.")
+        self._send_to_channel(guild, "server", embed)
+        self._log_queue({"type": "member_remove", "guild": guild.id, "user": member.id})
+
+    @commands.Cog.listener()
+    async def on_member_ban(self, guild: discord.Guild, user: discord.User):
+        embed = helpers.make_embed("Member Banned", f"{user} was banned from the server.")
+        self._send_to_channel(guild, "moderation", embed)
+        self._log_queue({"type": "member_ban", "guild": guild.id, "user": user.id})
+
+    @commands.Cog.listener()
+    async def on_guild_update(self, before: discord.Guild, after: discord.Guild):
+        desc = "Guild updated."
+        embed = helpers.make_embed("Guild Updated", desc)
+        self._send_to_channel(after, "server", embed)
+        self._log_queue({"type": "guild_update", "guild": after.id})
+
+    @commands.Cog.listener()
+    async def on_error(self, event_method: str, *args, **kwargs):
+        # discord.py calls this for unhandled errors; capture and log
+        tb = traceback.format_exc()
+        # Best-effort: try to write to all configured error channels
+        for gid, cfg in self._configs.items():
+            try:
+                guild = self.bot.get_guild(int(gid))
+                if not guild:
+                    continue
+                ch_id = cfg.get("errors")
+                if not ch_id:
+                    continue
+                ch = guild.get_channel(int(ch_id))
+                if ch:
+                    self.bot.loop.create_task(ch.send(embed=helpers.make_embed("Unhandled Error", f"Event: {event_method}\n```
+{tb[:1900]}
+```")))
+            except Exception:
+                pass
+        # also enqueue to async writer
+        self._log_queue({"type": "unhandled_error", "event": event_method, "traceback": tb})
+
+
+async def setup(bot: commands.Bot):
+    await bot.add_cog(LoggerCog(bot))

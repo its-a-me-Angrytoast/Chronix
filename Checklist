@@ -62,16 +62,16 @@ Phase 4 - Moderation Suite
 
 Phase 5 - Logging System
 ------------------------
-[ ] Create log channels for moderation, message, and server
-[ ] Add embed-based formatted logs
-[ ] Implement audit log augmentation for missed Discord actions
-[ ] Log message edits and deletions
-[ ] Log joins, leaves, and bans
-[ ] Add server update logs (roles, channels)
-[ ] Add error log channel for uncaught exceptions
-[ ] Add log creation command for automatic setup
+[x] Create log channels for moderation, message, and server
+[x] Add embed-based formatted logs
+[x] Implement audit log augmentation for missed Discord actions
+[x] Log message edits and deletions
+[x] Log joins, leaves, and bans
+[x] Add server update logs (roles, channels)
+[x] Add error log channel for uncaught exceptions
+[x] Add log creation command for automatic setup
 [ ] Add option to enable or disable categories
-[ ] Backup logs to database or file
+[x] Backup logs to database or file (written to data/log_configs.json and async queue)
 
 Phase 6 - Utility and Miscellaneous Commands
 ------------------------
