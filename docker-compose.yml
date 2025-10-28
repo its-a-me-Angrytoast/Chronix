@@ -28,6 +28,14 @@ services:
     environment:
       TOKEN: "${TOKEN:-}"
       OWNER_ID: "${OWNER_ID:-}"
+      DATABASE_DSN: "${DATABASE_DSN:-postgres://chronix:chronixpass@postgres:5432/chronix}"
+      POSTGRES_HOST: "${POSTGRES_HOST:-postgres}"
+      POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
+      POSTGRES_DB: "${POSTGRES_DB:-chronix}"
+      POSTGRES_USER: "${POSTGRES_USER:-chronix}"
+      POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-chronixpass}"
+      LAVALINK_HOST: "${LAVALINK_HOST:-lavalink}"
+      LAVALINK_PORT: "${LAVALINK_PORT:-2333}"
     ports:
       - "8080:8080"
 

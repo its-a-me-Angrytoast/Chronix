@@ -10,7 +10,7 @@ PHASE 0 - REPO AND BOOTSTRAP
 [x] Make folder tree under chronix_bot/ (utils, cogs, dashboard)
 [x] Implement config.py with pydantic/env parser
 [x] Implement utils/logger.py and utils/db.py (stubbed pool, no migrations)
-[ ] Test python run.py launches bot skeleton
+[x] Test python run.py launches bot skeleton
 
 PHASE 1 - CORE COGS AND STARTUP
 -------------------------------
@@ -22,11 +22,12 @@ PHASE 1 - CORE COGS AND STARTUP
 
 PHASE 2 - DB LAYER AND MODELS (NO MIGRATIONS)
 ---------------------------------------------
-[ ] Expand utils/db.py for asyncpg pool and safe transaction wrappers
-[ ] Add atomic safe_execute_money_transaction()
-[ ] Define dataclasses in utils/models.py for all major entities
-[ ] Document schema in docs/schema.md (no migrations yet)
-[ ] Confirm imports and pool creation succeed
+[x] Expand utils/db.py for asyncpg pool and safe transaction wrappers
+[x] Add atomic safe_execute_money_transaction()
+[x] Define dataclasses in utils/models.py for all major entities
+[x] Document schema in docs/schema.md (no migrations yet)
+[x] Confirm imports and pool creation succeed
+[x] Add in-memory fallback for dev when Postgres not available
 
 PHASE 3 - ECONOMY SYSTEM (CHRONS)
 ---------------------------------
