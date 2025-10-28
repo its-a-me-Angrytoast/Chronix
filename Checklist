@@ -1,0 +1,131 @@
+CHRONIX DEVELOPMENT CHECKLIST (CHRONOLOGICAL, NO MIGRATIONS UNTIL FINAL PHASE)
+==========================================================================
+
+PHASE 0 - REPO AND BOOTSTRAP
+----------------------------
+[ ] Initialize GitHub repo and .gitignore
+[ ] Create .env.example, README.md, pyproject.toml or requirements.txt
+[ ] Add Dockerfile and docker-compose.yml (Postgres + Lavalink + Chronix)
+[ ] Write run.py entrypoint
+[ ] Make folder tree under chronix_bot/ (utils, cogs, dashboard)
+[ ] Implement config.py with pydantic/env parser
+[ ] Implement utils/logger.py and utils/db.py (stubbed pool, no migrations)
+[ ] Test python run.py launches bot skeleton
+
+PHASE 1 - CORE COGS AND STARTUP
+-------------------------------
+[x] Create cogs/core/core.py with /ping, /uptime, reload/load commands
+[x] Create cogs/core/health.py with aiohttp health endpoint
+[x] Add permission checks in utils/perms.py
+[x] Implement embed helpers in utils/helpers.py
+[x] Verify owner reload commands work
+
+PHASE 2 - DB LAYER AND MODELS (NO MIGRATIONS)
+---------------------------------------------
+[ ] Expand utils/db.py for asyncpg pool and safe transaction wrappers
+[ ] Add atomic safe_execute_money_transaction()
+[ ] Define dataclasses in utils/models.py for all major entities
+[ ] Document schema in docs/schema.md (no migrations yet)
+[ ] Confirm imports and pool creation succeed
+
+PHASE 3 - ECONOMY SYSTEM (CHRONS)
+---------------------------------
+[ ] Implement cogs/economy/economy.py with /balance, /pay, /daily
+[ ] Hook into transaction helpers
+[ ] Add cooldowns and abuse protections
+[ ] Test in dev guild
+
+PHASE 4 - GAMEPLAY BASICS
+-------------------------
+[ ] hunt.py: hunt command and loot tables
+[ ] crates.py: crate opening flow
+[ ] gems.py: gem inventory and merging
+[ ] pets.py: pet register, train, feed, show
+[ ] Create YAMLs: loot_tables.yaml, crate_pools.yaml, pets.yaml
+[ ] Validate embeds and RNG flow
+
+PHASE 5 - AUTOHUNT SCHEDULER
+----------------------------
+[ ] Implement autohunt.py scheduler with enable/disable commands
+[ ] Batch processing and atomic debits
+[ ] Live embed updates
+[ ] DM user on insufficient funds
+[ ] Verify scheduler loop runs without blocking
+
+PHASE 6 - BATTLE ENGINE AND WEAPONS
+-----------------------------------
+[ ] battles.py: turn-based PvP/PvE battles
+[ ] weapons.py: equip and enhance commands
+[ ] Extend gems.py for socketing
+[ ] Add docs/balance.md for formulas
+[ ] Test full 1v1 battle flow
+
+PHASE 7 - CLANS AND TREASURY
+-----------------------------
+[ ] clans.py: create, join, leave, deposit, withdraw, perks
+[ ] Treasury uses DB transaction helper
+[ ] Add clan_perks.yaml config
+[ ] Check deposit/withdraw logging
+
+PHASE 8 - MODERATION AND LOGGING
+--------------------------------
+[ ] moderation.py: warn, mute, massban commands
+[ ] logger_cog.py: message, role, voice event logging
+[ ] Implement chro create-logs (owner and admin variants)
+[ ] Enable file and DB queue logging
+[ ] Confirm logs post correctly
+
+PHASE 9 - TICKETS AND ANNOUNCEMENTS
+-----------------------------------
+[ ] tickets.py: setup wizard, claim, close, transcript
+[ ] announce.py: builder wizard, preview, schedule
+[ ] Add wizard helpers in utils/helpers.py
+[ ] Verify preview and confirm flows
+
+PHASE 10 - MUSIC (LAVALINK/WAVELINK)
+------------------------------------
+[ ] music.py: connect node, queue controls, buttons
+[ ] Implement DJ role check in utils/perms.py
+[ ] Document Lavalink setup in README
+[ ] Test in-memory queue and embeds
+
+PHASE 11 - CHESS AND FEEDS
+--------------------------
+[ ] chess.py: local chess with board render
+[ ] rss.py: feed registration and poller
+[ ] youtube.py: YouTube poller via API key
+[ ] Create assets/templates/chess_board.py
+[ ] Manual trigger test for feeds
+
+PHASE 12 - AI HOOKS (GEMINI)
+----------------------------
+[ ] gemini_client.py: AIClient abstraction
+[ ] ai_demo.py: /ai generate and /ai summarize commands
+[ ] Add opt-in logic in config and helpers
+[ ] Validate fallback when API key missing
+
+PHASE 13 - DASHBOARD SCAFFOLD
+-----------------------------
+[ ] Create dashboard folder with FastAPI endpoints
+[ ] Add owner confirmation webhook
+[ ] Add JWT or shared secret for dashboard authentication
+[ ] Verify confirm flow in dev mode
+
+PHASE 14 - POLISH, ALIASES, AND DOCS
+------------------------------------
+[ ] Add alias registry and docs/aliases.md
+[ ] Add docs/configuration.md and docs/balance.md
+[ ] Standardize embed templates
+[ ] Add error handlers and friendly messages
+[ ] Ensure all commands have slash and prefix aliases
+
+PHASE 15 - TESTS, MIGRATIONS, CI, AND RELEASE
+---------------------------------------------
+[ ] Generate migrations from docs/schema.md
+[ ] Add unit tests for loot, battle, transactions, and autohunt
+[ ] Create GitHub Actions workflow .github/workflows/ci.yml
+[ ] Build Docker image and test compose stack
+[ ] Apply migrations and confirm schema correctness
+[ ] Tag and release version 1.0.0
+
+END OF CHECKLIST
