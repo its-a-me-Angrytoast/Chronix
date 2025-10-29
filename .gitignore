@@ -221,6 +221,13 @@ marimo/_static/
 marimo/_lsp/
 __marimo__/
 
+<<<<<<< HEAD
 #files
 file.txt
 .github/
+=======
+#files -- leave ths part
+f.txt
+
+
+>>>>>>> 3435551 (feat: Implement banking system with deposits, withdrawals, and interest application)
