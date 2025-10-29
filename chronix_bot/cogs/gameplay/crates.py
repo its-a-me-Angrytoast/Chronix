@@ -259,3 +259,4 @@ class Crates(commands.Cog):
 async def setup(bot: commands.Bot) -> None:
     """Add the crates cog to the bot."""
     await bot.add_cog(Crates(bot))
+"""Crate opening system for Phase 4."""
