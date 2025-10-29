@@ -48,6 +48,7 @@ def latency_embed(latency_ms: int) -> discord.Embed:
 
 def format_chrons(amount: int) -> str:
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     """Format a chron amount with emoji."""
     return f"{EMOJI['chrons']} {amount}"
 
@@ -72,6 +73,8 @@ def parse_duration(s: str) -> int:
         raise ValueError("Duration must be greater than zero")
     return total
 =======
+=======
+>>>>>>> Stashed changes
     """Format a Chrons amount with emoji and thousands separators.
 
     Examples:
@@ -82,5 +85,8 @@ def parse_duration(s: str) -> int:
     except Exception:
         return f"{EMOJI.get('chrons', '')} {amount}"
     return f"{EMOJI.get('chrons', '')} {n:,}"
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 

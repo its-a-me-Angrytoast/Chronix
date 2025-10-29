@@ -216,18 +216,21 @@ Phase 9 - Lootboxes and Crates
 ------------------------
 [x] Add lootbox system with rarity tiers (`data/loot_tables.yaml` present)
 [x] Add item table for rarities (loot tables exist)
-[x] Add crate opening animation in embeds (`crates.py` implemented)
-[ ] Add special event crates
-[ ] Implement rarity balancing algorithm
-[ ] Add drop logs and user notifications
-[ ] Add crate gift command
-[ ] Add limited-time seasonal crates
-[ ] Add inventory item display command
-[ ] Add crate marketplace integration
+[x] Add crate opening animation in embeds (`chronix_bot/cogs/gameplay/crates.py` implemented)
+[~] Add special event crates (event table added in `data/loot_tables.yaml` — event scheduling/activation windows pending)
+[~] Implement rarity balancing algorithm (basic rarity_score and `is_rare` marking implemented; tuning and balanced algorithm pending)
+[x] Add drop logs and user notifications (crate_open log enqueued; rare-drop broadcast added)
+[x] Add crate gift command (`crate_gift` implemented)
+[ ] Add limited-time seasonal crates (scheduling + activation windows TODO)
+[x] Add inventory item display command (`mycrates` implemented)
+[ ] Add crate marketplace integration (marketplace hook/plumbing TODO)
 
-[ ] Add drop logs, broadcast for rare drops, and rarity analytics
-[ ] Add gifting and tradeable crate items
-[ ] Add seasonal/limited crates with activation windows
+[ ] Remaining Phase 9 follow-ups:
+	- Add slash-command parity for `crate_gift` and `mycrates` (part of current work)
+	- Migrate inventory to DB-backed table and provide migrations
+	- Add rarity analytics and per-guild drop history views
+	- Add per-guild rare-drop announcement channel option and permission checks
+	- Add CLI/admin tools to create/enable event crates with windows
 
 Phase 10 - Pets System
 ------------------------
