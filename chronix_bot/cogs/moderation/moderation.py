@@ -254,6 +254,22 @@ class Moderation(commands.Cog):
         await ctx.send(embed=helpers.make_embed("Massban complete", f"Banned {len(members)-failed} members; failed: {failed}"))
         self._log({"type": "massban", "guild": ctx.guild.id, "by": ctx.author.id, "role": role.id, "count": len(members), "failed": failed})
 
+    @commands.command(name="modhelp")
+    async def modhelp(self, ctx: commands.Context):
+        """Show moderation commands and usage."""
+        desc = (
+            "ban @user [reason] — Ban a member\n"
+            "kick @user [reason] — Kick a member\n"
+            "warn @user reason — Warn a member (stored)\n"
+            "purge N — Bulk delete messages\n"
+            "slowmode seconds — Set channel slowmode\n"
+            "nick @user name — Change nickname\n"
+            "role @user add|remove Role Name — Manage roles\n"
+            "mute/unmute/tempmute — Mute controls (Muted role)\n"
+            "massban Role — Owner-only destructive action (confirm)\n"
+        )
+        await ctx.send(embed=helpers.make_embed("Moderation Help", desc))
+
     # ----- slash commands (examples)
     @app_commands.command(name="ban", description="Ban a member")
     @app_commands.checks.has_permissions(ban_members=True)
@@ -268,4 +284,133 @@ class Moderation(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Moderation(bot))
+    cog = Moderation(bot)
+    await bot.add_cog(cog)
+
+    # Register app command wrappers for major moderation actions to provide slash parity
+    try:
+        @bot.tree.command(name="kick", description="Kick a member")
+        async def _kick(interaction: discord.Interaction, member: discord.Member, reason: Optional[str] = None):
+            await interaction.response.defer()
+            try:
+                await member.kick(reason=reason)
+                await interaction.followup.send(embed=helpers.make_embed("Kicked", f"{member} was kicked."))
+                cog._log({"type": "kick", "guild": interaction.guild_id, "target": member.id, "by": interaction.user.id, "reason": reason})
+            except Exception as e:
+                await interaction.followup.send(f"Kick failed: {e}", ephemeral=True)
+
+        @bot.tree.command(name="warn", description="Warn a member")
+        async def _warn(interaction: discord.Interaction, member: discord.Member, reason: str):
+            await interaction.response.defer()
+            gid = interaction.guild_id or 0
+            cog._warns.setdefault(gid, {}).setdefault(member.id, []).append(reason)
+            await interaction.followup.send(embed=helpers.make_embed("Warned", f"{member.mention} was warned. Reason: {reason}"))
+            cog._log({"type": "warn", "guild": gid, "target": member.id, "by": interaction.user.id, "reason": reason})
+
+        @bot.tree.command(name="purge", description="Bulk delete messages from channel")
+        async def _purge(interaction: discord.Interaction, amount: int = 10):
+            await interaction.response.defer()
+            chan = interaction.channel
+            if not isinstance(chan, discord.TextChannel):
+                await interaction.followup.send("This command must be used in a text channel.", ephemeral=True)
+                return
+            if amount <= 0 or amount > 1000:
+                await interaction.followup.send("Amount must be between 1 and 1000.", ephemeral=True)
+                return
+            try:
+                deleted = await chan.purge(limit=amount)
+                await interaction.followup.send(embed=helpers.make_embed("Purged", f"Deleted {len(deleted)} messages."))
+                cog._log({"type": "purge", "guild": interaction.guild_id, "by": interaction.user.id, "count": len(deleted)})
+            except Exception as e:
+                await interaction.followup.send(f"Purge failed: {e}", ephemeral=True)
+
+        @bot.tree.command(name="mute", description="Mute a member")
+        async def _mute(interaction: discord.Interaction, member: discord.Member, reason: Optional[str] = None):
+            await interaction.response.defer()
+            guild = interaction.guild
+            if not isinstance(guild, discord.Guild):
+                await interaction.followup.send("This command must be used in a server.", ephemeral=True)
+                return
+            try:
+                role = await cog._ensure_muted_role(guild)
+                await member.add_roles(role, reason=reason)
+                await interaction.followup.send(embed=helpers.make_embed("Muted", f"{member.mention} has been muted."))
+                cog._log({"type": "mute", "guild": guild.id, "target": member.id, "by": interaction.user.id, "reason": reason})
+            except Exception as e:
+                await interaction.followup.send(f"Mute failed: {e}", ephemeral=True)
+
+        @bot.tree.command(name="unmute", description="Unmute a member")
+        async def _unmute(interaction: discord.Interaction, member: discord.Member):
+            await interaction.response.defer()
+            guild = interaction.guild
+            if not isinstance(guild, discord.Guild):
+                await interaction.followup.send("This command must be used in a server.", ephemeral=True)
+                return
+            try:
+                role = discord.utils.get(guild.roles, name="Muted")
+                if role:
+                    await member.remove_roles(role)
+                await interaction.followup.send(embed=helpers.make_embed("Unmuted", f"{member.mention} has been unmuted."))
+                cog._log({"type": "unmute", "guild": guild.id, "target": member.id, "by": interaction.user.id})
+            except Exception as e:
+                await interaction.followup.send(f"Unmute failed: {e}", ephemeral=True)
+
+        @bot.tree.command(name="tempmute", description="Temporarily mute a member (e.g. 10m, 1h)")
+        async def _tempmute(interaction: discord.Interaction, member: discord.Member, duration: str):
+            await interaction.response.defer()
+            guild = interaction.guild
+            if not isinstance(guild, discord.Guild):
+                await interaction.followup.send("This command must be used in a server.", ephemeral=True)
+                return
+            try:
+                seconds = parse_duration(duration)
+            except ValueError as e:
+                await interaction.followup.send(str(e), ephemeral=True)
+                return
+            try:
+                role = await cog._ensure_muted_role(guild)
+                await member.add_roles(role)
+                await interaction.followup.send(embed=helpers.make_embed("Tempmuted", f"{member.mention} muted for {duration}"))
+                cog._log({"type": "tempmute", "guild": guild.id, "target": member.id, "by": interaction.user.id, "duration_s": seconds})
+
+                async def _unmute_later():
+                    await asyncio.sleep(seconds)
+                    try:
+                        await member.remove_roles(role)
+                        try:
+                            await member.send("You have been unmuted.")
+                        except Exception:
+                            pass
+                        cog._log({"type": "tempmute_unmute", "guild": guild.id, "target": member.id})
+                    except Exception:
+                        pass
+
+                interaction.client.loop.create_task(_unmute_later())
+            except Exception as e:
+                await interaction.followup.send(f"Tempmute failed: {e}", ephemeral=True)
+
+        @bot.tree.command(name="massban", description="Owner: ban all members with a role")
+        async def _massban(interaction: discord.Interaction, role: discord.Role):
+            await interaction.response.defer()
+            # owner-only enforcement
+            settings_owner = getattr(interaction.client, "settings", None)
+            owner_id = None
+            if settings_owner:
+                owner_id = getattr(settings_owner, "OWNER_ID", None)
+            if interaction.user.id != owner_id:
+                await interaction.followup.send("Only the configured owner can run this command.", ephemeral=True)
+                return
+            guild = interaction.guild
+            if not isinstance(guild, discord.Guild):
+                await interaction.followup.send("This command must be used in a server.", ephemeral=True)
+                return
+            members = [m for m in guild.members if role in m.roles and not m.bot]
+            if not members:
+                await interaction.followup.send("No members with that role to ban.", ephemeral=True)
+                return
+            # confirmation is harder in app commands; for safety, require explicit confirm text
+            await interaction.followup.send(f"This will ban {len(members)} members. Use the prefix massban command to confirm.", ephemeral=True)
+            cog._log({"type": "massban_attempt", "guild": guild.id, "by": interaction.user.id, "role": role.id, "count": len(members)})
+    except Exception:
+        # app command registration may fail in some environments; ignore
+        pass

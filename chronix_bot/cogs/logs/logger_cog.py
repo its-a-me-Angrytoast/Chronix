@@ -101,6 +101,27 @@ class LoggerCog(commands.Cog):
         await ctx.send(embed=helpers.make_embed("Log channels created", f"Created/registered channels: {', '.join(created.keys())}"))
         self._log_queue({"type": "create_logs", "guild": guild.id, "created": created, "by": ctx.author.id})
 
+    @commands.command(name="logs")
+    @commands.has_permissions(manage_guild=True)
+    async def logs(self, ctx: commands.Context, subcommand: Optional[str] = None):
+        """Logs command group. Usage: chro logs view"""
+        if subcommand is None or subcommand.lower() != "view":
+            await ctx.send("Usage: chro logs view")
+            return
+        guild = ctx.guild
+        if guild is None:
+            await ctx.send("This command must be used in a server.")
+            return
+        cfg = self._configs.get(str(guild.id), {})
+        if not cfg:
+            await ctx.send("No log channels configured for this guild.")
+            return
+        lines = []
+        for k, v in cfg.items():
+            ch = guild.get_channel(int(v)) if v else None
+            lines.append(f"{k}: {ch.mention if ch else 'Not found / unset'}")
+        await ctx.send("\n".join(lines))
+
     # ---- event listeners
     @commands.Cog.listener()
     async def on_message_delete(self, message: discord.Message):
@@ -147,9 +168,22 @@ class LoggerCog(commands.Cog):
 
     @commands.Cog.listener()
     async def on_member_ban(self, guild: discord.Guild, user: discord.User):
-        embed = helpers.make_embed("Member Banned", f"{user} was banned from the server.")
+        # Try to augment with audit log info (who performed the ban)
+        actor = None
+        try:
+            async for entry in guild.audit_logs(limit=5, action=discord.AuditLogAction.ban):
+                if getattr(entry.target, "id", None) == user.id:
+                    actor = entry.user
+                    break
+        except Exception:
+            actor = None
+
+        desc = f"{user} was banned from the server."
+        if actor:
+            desc += f" Action by: {actor}"
+        embed = helpers.make_embed("Member Banned", desc)
         self._send_to_channel(guild, "moderation", embed)
-        self._log_queue({"type": "member_ban", "guild": guild.id, "user": user.id})
+        self._log_queue({"type": "member_ban", "guild": guild.id, "user": user.id, "by": getattr(actor, "id", None)})
 
     @commands.Cog.listener()
     async def on_guild_update(self, before: discord.Guild, after: discord.Guild):
@@ -183,4 +217,99 @@ class LoggerCog(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(LoggerCog(bot))
+    cog = LoggerCog(bot)
+    await bot.add_cog(cog)
+
+    # Register slash equivalents and viewing/toggling commands on the app command tree
+    try:
+        @bot.tree.command(name="create-logs", description="Create standard log channels for this guild")
+        async def _create_logs(interaction: discord.Interaction):
+            await interaction.response.defer()
+            guild = interaction.guild
+            if guild is None:
+                await interaction.followup.send("This command must be used in a server.", ephemeral=True)
+                return
+            # reuse cog logic: create channels and persist
+            names = {
+                "moderation": "moderation-logs",
+                "messages": "message-logs",
+                "server": "server-logs",
+                "errors": "error-logs",
+            }
+            created = {}
+            for key, name in names.items():
+                ch = discord.utils.get(guild.text_channels, name=name)
+                if ch is None:
+                    try:
+                        ch = await guild.create_text_channel(name, reason="Chronix log channel creation")
+                    except Exception:
+                        ch = None
+                if ch:
+                    created[key] = ch.id
+
+            if str(guild.id) not in cog._configs:
+                cog._configs[str(guild.id)] = {}
+            cog._configs[str(guild.id)].update(created)
+            _save_configs(cog._configs)
+
+            await interaction.followup.send(f"Created/registered channels: {', '.join(created.keys())}")
+            cog._log_queue({"type": "create_logs", "guild": guild.id, "created": created, "by": interaction.user.id})
+
+        @bot.tree.command(name="logs-view", description="View configured log channels for this guild")
+        async def _logs_view(interaction: discord.Interaction):
+            await interaction.response.defer()
+            guild = interaction.guild
+            if guild is None:
+                await interaction.followup.send("This command must be used in a server.", ephemeral=True)
+                return
+            cfg = cog._configs.get(str(guild.id), {})
+            if not cfg:
+                await interaction.followup.send("No log channels configured for this guild.", ephemeral=True)
+                return
+            lines = []
+            for k, v in cfg.items():
+                ch = guild.get_channel(int(v)) if v else None
+                lines.append(f"{k}: {ch.mention if ch else 'Not found / unset'}")
+            await interaction.followup.send("\n".join(lines), ephemeral=True)
+
+        @bot.tree.command(name="logs-toggle", description="Enable or disable a log category for this guild")
+        async def _logs_toggle(interaction: discord.Interaction, category: str, state: str):
+            await interaction.response.defer()
+            guild = interaction.guild
+            if guild is None:
+                await interaction.followup.send("This command must be used in a server.", ephemeral=True)
+                return
+            category = category.lower()
+            if category not in ("moderation", "messages", "server", "errors"):
+                await interaction.followup.send("Unknown category. Choose from moderation, messages, server, errors.", ephemeral=True)
+                return
+            state = state.lower()
+            if state not in ("on", "off"):
+                await interaction.followup.send("State must be 'on' or 'off'.", ephemeral=True)
+                return
+            cfg = cog._configs.setdefault(str(guild.id), {})
+            if state == "off":
+                cfg.pop(category, None)
+                _save_configs(cog._configs)
+                await interaction.followup.send(f"Disabled {category} logs.", ephemeral=True)
+                cog._log_queue({"type": "logs_toggle", "guild": guild.id, "category": category, "state": "off", "by": interaction.user.id})
+                return
+            # turning on: must have an existing channel in guild named <category>-logs
+            name_map = {"moderation": "moderation-logs", "messages": "message-logs", "server": "server-logs", "errors": "error-logs"}
+            ch = discord.utils.get(guild.text_channels, name=name_map[category])
+            if ch is None:
+                # create if missing
+                try:
+                    ch = await guild.create_text_channel(name_map[category], reason="Chronix log channel creation via toggle")
+                except Exception:
+                    ch = None
+            if ch:
+                cfg[category] = ch.id
+                _save_configs(cog._configs)
+                await interaction.followup.send(f"Enabled {category} logs to {ch.mention}", ephemeral=True)
+                cog._log_queue({"type": "logs_toggle", "guild": guild.id, "category": category, "state": "on", "channel": ch.id, "by": interaction.user.id})
+            else:
+                await interaction.followup.send(f"Failed to create or find channel for {category}", ephemeral=True)
+    except Exception:
+        # app command registration may fail in some environments; ignore
+        pass

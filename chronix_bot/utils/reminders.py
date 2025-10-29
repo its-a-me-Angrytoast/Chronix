@@ -35,6 +35,11 @@ def list_reminders() -> Dict[str, Any]:
 
 
 def add_reminder(user_id: int, when_ts: int, message: str, guild_id: int | None = None) -> Dict[str, Any]:
+    """Add a reminder.
+
+    `when_ts` should be a UNIX timestamp (seconds since epoch). We store it
+    as an integer epoch to be restart-safe.
+    """
     with _lock:
         d = _load()
         rid = str(int(time.time() * 1000))

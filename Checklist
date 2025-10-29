@@ -59,7 +59,7 @@ Phase 4 - Moderation Suite
 [x] Create moderation cooldown safety
 [x] Add role-based permission checks
 [x] Phase 4 - Note: Ensure to review the moderation commands thoroughly.
-[ ] Add moderation help command
+[x] Add moderation help command
 
 Phase 5 - Logging System
 ------------------------
@@ -83,30 +83,35 @@ Phase 6 - Utility and Miscellaneous Commands
 [x] Add banner and emojiinfo
 [x] Add say command (owner-only)
 [x] Add choose and roll utilities
-[x] Implement reminder and timer commands
+[x] Implement reminder and timer commands (startup scheduler added)
 [x] Add translate and dictionary lookup commands
 [x] Add weather and fact APIs
-[x] Add math and conversion tools
+[x] Add math and conversion tools (safe eval)
 [x] Add randomcolor utility
 [x] Add Wiki and Urban Dictionary lookup commands
-[ ] Add text translation and dictionary lookups
-[ ] Add weather and fact APIs
-[ ] Add math and conversion tools
+[x] Add slash-command parity for major utilities (remind, timer, define, translate, weather, fact, wiki, urban, randomcolor, convert, eval, emojiinfo, banner)
+[x] Add unit tests for reminders, inventory, and moderation utils (`tests/test_reminders.py`, `tests/test_inventory.py`, `tests/test_moderation_utils.py`)
+[x] Add DB persistence scaffold (`chronix_bot/utils/persistence.py`) — TODO: implement migrations and real DB adapters
+[x] Add slash-command parity for major utilities (remind, timer, define, translate, weather, fact, wiki, urban, randomcolor, convert, eval, emojiinfo, banner)
+[x] Add text translation and dictionary lookups
+[x] Add weather and fact APIs
+[x] Add math and conversion tools
 [x] Add embed helper usage for responses
-[ ] Add randomcolor and other cosmetic utilities
-[ ] Integrate external APIs (Wikipedia, Urban Dictionary)
+[x] Add randomcolor and other cosmetic utilities
+[x] Integrate external APIs (Wikipedia, Urban Dictionary)
 [ ] Style all responses with consistent embed themes and buttons
 
 Phase 7 - Music System
 ------------------------
-[ ] Setup Lavalink or Wavelink connection
+[x] Setup a development-friendly music cog with a persistent queue (file-backed)
+[ ] Setup Lavalink or Wavelink connection (scaffolded — not connected)
 [ ] Add YouTube, and Spotify support and update both .env and .env.example
-[ ] Add play, pause, skip, stop, and shuffle commands
+[x] Add play, skip, stop, nowplaying, queue, volume commands (placeholder playback)
 [ ] Add interactive queue view with persistent UI
 [ ] Add lyrics fetching via API
-[ ] Add DJ role permissions for playback controls
-[ ] Implement volume and equalizer controls
-[ ] Add song requester tracking
+[x] Add DJ role permissions enforcement (checks for Manage Server or `DJ` role)
+[ ] Implement volume and equalizer controls (placeholder implemented)
+[x] Add song requester tracking (stored in queue items)
 [ ] Add music log entries for events
 [ ] Add error recovery for disconnected players
 

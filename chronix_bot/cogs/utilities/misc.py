@@ -23,6 +23,7 @@ import math
 import ast
 import aiohttp
 import asyncio
+import time
 from typing import Optional, List
 
 import discord
@@ -163,15 +164,16 @@ class Misc(commands.Cog):
         except ValueError as e:
             await ctx.send(str(e))
             return
-        when_ts = int(asyncio.get_event_loop().time() + seconds)
+        when_ts = int(time.time() + seconds)
         entry = reminders_store.add_reminder(ctx.author.id, when_ts, message, guild_id=ctx.guild.id if ctx.guild else None)
         # schedule background task
         self.bot.loop.create_task(self._deliver_reminder(entry))
         await ctx.send(embed=helpers.make_embed("Reminder set", f"I'll remind you in {when}: {message} (ID: {entry['id']})"))
 
     async def _deliver_reminder(self, entry: dict):
-        now = asyncio.get_event_loop().time()
-        delay = entry["when"] - int(now)
+        # entry["when"] is a UNIX timestamp
+        now_ts = time.time()
+        delay = int(entry.get("when", 0)) - int(now_ts)
         if delay > 0:
             await asyncio.sleep(delay)
         try:
@@ -194,6 +196,239 @@ class Misc(commands.Cog):
         await asyncio.sleep(seconds)
         await ctx.send(embed=helpers.make_embed("Timer finished", f"{ctx.author.mention} timer for {duration} finished."))
 
+
+async def setup(bot: commands.Bot):
+    cog = Misc(bot)
+    await bot.add_cog(cog)
+
+    # Schedule outstanding reminders on startup (best-effort). We load stored
+    # reminders and schedule delivery for those that are still pending.
+    try:
+        data = reminders_store.list_reminders()
+        rems = data.get("reminders", []) if isinstance(data, dict) else []
+        for entry in rems:
+            # schedule only those with a valid timestamp
+            try:
+                when = int(entry.get("when", 0))
+                if when <= 0:
+                    continue
+                # schedule delivery task
+                bot.loop.create_task(cog._deliver_reminder(entry))
+            except Exception:
+                continue
+    except Exception:
+        # don't let the bot fail to start if scheduling fails
+        pass
+
+    # Register slash-command parity for major utilities
+    try:
+        @bot.tree.command(name="remind", description="Set a reminder (e.g. 10m, 1h)")
+        async def _remind(interaction: discord.Interaction, when: str, message: str):
+            await interaction.response.defer()
+            try:
+                seconds = helpers.parse_duration(when)
+            except Exception as e:
+                await interaction.followup.send(str(e), ephemeral=True)
+                return
+            when_ts = int(time.time() + seconds)
+            entry = reminders_store.add_reminder(interaction.user.id, when_ts, message, guild_id=interaction.guild_id)
+            # schedule delivery
+            bot.loop.create_task(cog._deliver_reminder(entry))
+            await interaction.followup.send(f"Reminder set: I'll remind you in {when}. (ID: {entry['id']})")
+
+        @bot.tree.command(name="timer", description="Start a countdown timer in this channel")
+        async def _timer(interaction: discord.Interaction, duration: str):
+            await interaction.response.defer()
+            try:
+                seconds = helpers.parse_duration(duration)
+            except Exception as e:
+                await interaction.followup.send(str(e), ephemeral=True)
+                return
+            channel = interaction.channel
+            await interaction.followup.send(f"Timer started for {duration}.")
+
+            async def _timer_wait():
+                await asyncio.sleep(seconds)
+                try:
+                    await channel.send(f"Timer finished: {interaction.user.mention} ({duration})")
+                except Exception:
+                    pass
+
+            bot.loop.create_task(_timer_wait())
+
+        @bot.tree.command(name="define", description="Get a dictionary definition")
+        async def _define(interaction: discord.Interaction, word: str):
+            await interaction.response.defer()
+            url = f"https://api.dictionaryapi.dev/api/v2/entries/en/{word}"
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, timeout=6) as r:
+                        if r.status != 200:
+                            await interaction.followup.send(f"No definition found for {word}.", ephemeral=True)
+                            return
+                        data = await r.json()
+            except Exception:
+                await interaction.followup.send("Lookup failed (network error).", ephemeral=True)
+                return
+            try:
+                meanings = data[0].get("meanings", [])
+                defs = meanings[0].get("definitions", [])
+                definition = defs[0].get("definition")
+                await interaction.followup.send(definition)
+            except Exception:
+                await interaction.followup.send(f"No definition found for {word}.", ephemeral=True)
+
+        @bot.tree.command(name="translate", description="Translate text into a target language (e.g. en, es)")
+        async def _translate(interaction: discord.Interaction, target_lang: str, text: str):
+            await interaction.response.defer()
+            url = "https://api.mymemory.translated.net/get"
+            params = {"q": text, "langpair": f"auto|{target_lang}"}
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, params=params, timeout=8) as r:
+                        if r.status != 200:
+                            await interaction.followup.send("Translation failed.", ephemeral=True)
+                            return
+                        js = await r.json()
+            except Exception:
+                await interaction.followup.send("Translation failed (network).", ephemeral=True)
+                return
+            translated = js.get("responseData", {}).get("translatedText")
+            if not translated:
+                await interaction.followup.send("Translation unavailable.", ephemeral=True)
+                return
+            await interaction.followup.send(translated)
+
+        @bot.tree.command(name="weather", description="Quick weather lookup via wttr.in")
+        async def _weather(interaction: discord.Interaction, location: Optional[str] = ""):
+            await interaction.response.defer()
+            query = location or (interaction.guild.name if interaction.guild else "")
+            url = f"https://wttr.in/{query}?format=3"
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, timeout=6) as r:
+                        text = await r.text()
+                        await interaction.followup.send(text)
+            except Exception:
+                await interaction.followup.send("Weather lookup failed.", ephemeral=True)
+
+        @bot.tree.command(name="fact", description="Get a random fact")
+        async def _fact(interaction: discord.Interaction):
+            await interaction.response.defer()
+            url = "https://uselessfacts.jsph.pl/random.json?language=en"
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, timeout=6) as r:
+                        if r.status != 200:
+                            await interaction.followup.send("Could not fetch fact.", ephemeral=True)
+                            return
+                        js = await r.json()
+                        await interaction.followup.send(js.get("text"))
+            except Exception:
+                await interaction.followup.send("Fact service unavailable.", ephemeral=True)
+
+        @bot.tree.command(name="wiki", description="Get a short Wikipedia summary")
+        async def _wiki(interaction: discord.Interaction, query: str):
+            await interaction.response.defer()
+            url = "https://en.wikipedia.org/api/rest_v1/page/summary/" + query.replace(" ", "_")
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, timeout=6) as r:
+                        if r.status != 200:
+                            await interaction.followup.send("No wiki summary found.", ephemeral=True)
+                            return
+                        js = await r.json()
+                        title = js.get("title")
+                        extract = js.get("extract")
+                        await interaction.followup.send(f"**{title}**\n{extract}")
+            except Exception:
+                await interaction.followup.send("Wikipedia lookup failed.", ephemeral=True)
+
+        @bot.tree.command(name="urban", description="Lookup Urban Dictionary")
+        async def _urban(interaction: discord.Interaction, term: str):
+            await interaction.response.defer()
+            url = "https://api.urbandictionary.com/v0/define"
+            try:
+                async with aiohttp.ClientSession() as session:
+                    async with session.get(url, params={"term": term}, timeout=6) as r:
+                        js = await r.json()
+                        if not js.get("list"):
+                            await interaction.followup.send("No Urban Dictionary entry found.", ephemeral=True)
+                            return
+                        entry = js["list"][0]
+                        await interaction.followup.send(entry.get("definition")[:1900])
+            except Exception:
+                await interaction.followup.send("Urban lookup failed.", ephemeral=True)
+
+        @bot.tree.command(name="randomcolor", description="Generate a random color")
+        async def _randomcolor(interaction: discord.Interaction):
+            await interaction.response.defer()
+            h = "%06x" % random.randint(0, 0xFFFFFF)
+            await interaction.followup.send(f"#{h}")
+
+        @bot.tree.command(name="convert", description="Simple unit conversions (c2f,f2c,m2ft,ft2m,km2mi,mi2km)")
+        async def _convert(interaction: discord.Interaction, value: float, from_unit: str, to_unit: str):
+            await interaction.response.defer()
+            k = (from_unit.lower(), to_unit.lower())
+            res = None
+            if k == ("c", "f") or k == ("celsius", "fahrenheit"):
+                res = value * 9/5 + 32
+            elif k == ("f", "c") or k == ("fahrenheit", "celsius"):
+                res = (value - 32) * 5/9
+            elif k == ("m", "ft") or k == ("meter", "feet"):
+                res = value * 3.28084
+            elif k == ("ft", "m") or k == ("feet", "meter"):
+                res = value / 3.28084
+            elif k == ("km", "mi"):
+                res = value * 0.621371
+            elif k == ("mi", "km"):
+                res = value / 0.621371
+            else:
+                await interaction.followup.send("Unsupported conversion.", ephemeral=True)
+                return
+            await interaction.followup.send(f"{value} {from_unit} = {res:.4f} {to_unit}")
+
+        @bot.tree.command(name="eval", description="Evaluate a math expression (safe)")
+        async def _eval(interaction: discord.Interaction, expr: str):
+            await interaction.response.defer()
+            try:
+                v = cog._safe_eval_expr(expr)
+                await interaction.followup.send(str(v))
+            except Exception as e:
+                await interaction.followup.send(f"Eval error: {e}", ephemeral=True)
+
+        @bot.tree.command(name="emojiinfo", description="Show info about a custom emoji")
+        async def _emojiinfo(interaction: discord.Interaction, emoji: str):
+            await interaction.response.defer()
+            # mimic prefix behavior (guild emojis)
+            m = re.match(r"^<a?:([a-zA-Z0-9_]+):(\d+)>$", emoji)
+            if m:
+                eid = int(m.group(2))
+                em = discord.utils.get(interaction.guild.emojis, id=eid) if interaction.guild else None
+            else:
+                em = discord.utils.get(interaction.guild.emojis, name=emoji) if interaction.guild else None
+            if not em:
+                await interaction.followup.send("Emoji not found in this guild.", ephemeral=True)
+                return
+            desc = f"Name: {em.name}\nID: {em.id}\nAnimated: {em.animated}\nURL: {em.url}"
+            await interaction.followup.send(desc)
+
+        @bot.tree.command(name="banner", description="Show user or server banner")
+        async def _banner(interaction: discord.Interaction, member: Optional[discord.Member] = None):
+            await interaction.response.defer()
+            member = member or interaction.user
+            url = getattr(member, "banner", None)
+            if url:
+                await interaction.followup.send(str(url.url))
+                return
+            g = interaction.guild
+            if g and g.banner:
+                await interaction.followup.send(str(g.banner.url))
+                return
+            await interaction.followup.send("No banner found.", ephemeral=True)
+    except Exception:
+        # app command registration can fail in restricted environments
+        pass
     @commands.command(name="say")
     @commands.is_owner()
     async def say(self, ctx: commands.Context, *, text: str):
@@ -369,7 +604,3 @@ class Misc(commands.Cog):
     @app_commands.command(name="serverinfo")
     async def slash_serverinfo(self, interaction: discord.Interaction):
         await interaction.response.send_message("See prefix command chro serverinfo for details.")
-
-
-async def setup(bot: commands.Bot):
-    await bot.add_cog(Misc(bot))
