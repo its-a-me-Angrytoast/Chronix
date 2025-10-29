@@ -162,13 +162,10 @@ Phase 8 - Economy System
 [x] Log economy transactions (DB when available)
 [x] Add economy reset and backup tools (TODO)
 
-<<<<<<< HEAD
 Phase 9 - Lootboxes and Crates
 ------------------------
 [x] Add lootbox system with rarity tiers (`data/loot_tables.yaml` present)
 [x] Add item table for rarities (loot tables exist)
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
 [x] Add crate opening animation in embeds (`crates.py` implemented)
 [ ] Add special event crates
 [ ] Implement rarity balancing algorithm
@@ -180,48 +177,6 @@ Phase 9 - Lootboxes and Crates
 [ ] Add drop logs, broadcast for rare drops, and rarity analytics
 [ ] Add gifting and tradeable crate items
 [ ] Add seasonal/limited crates with activation windows
-=======
-=======
->>>>>>> Stashed changes
-[x] Add crate opening animation in embeds (`chronix_bot/cogs/gameplay/crates.py` implemented)
-[~] Add special event crates (event table added in `data/loot_tables.yaml` — event scheduling/activation windows pending)
-[~] Implement rarity balancing algorithm (basic rarity_score and `is_rare` marking implemented; tuning and balanced algorithm pending)
-[x] Add drop logs and user notifications (crate_open log enqueued; rare-drop broadcast added)
-[x] Add crate gift command (`crate_gift` implemented)
-[ ] Add limited-time seasonal crates (scheduling + activation windows TODO)
-[x] Add inventory item display command (`mycrates` implemented)
-[ ] Add crate marketplace integration (marketplace hook/plumbing TODO)
-
-[ ] Remaining Phase 9 follow-ups:
-	- Add slash-command parity for `crate_gift` and `mycrates` (part of current work)
-	- Migrate inventory to DB-backed table and provide migrations
-	- Add rarity analytics and per-guild drop history views
-	- Add per-guild rare-drop announcement channel option and permission checks
-	- Add CLI/admin tools to create/enable event crates with windows
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
->>>>>>> Stashed changes
-
-Phase 10 - Pets System
-------------------------
-[ ] Create pet data structure with traits and rarity
-[ ] Add adopt and release commands
-[ ] Add feeding and leveling mechanics
-[ ] Add evolution system based on XP and rarity
-[ ] Add PvE and PvP battles
-[ ] Add pet stats and battle commands
-[ ] Add clan battle integration
-[ ] Add leaderboard for pets and trainers
-[ ] Add pet logs for wins and losses
-[ ] Add random event system for pet discovery
-
-=======
-
-Phase 9 - Lootboxes and Crates
-------------------------
-[x] Add lootbox system with rarity tiers (`data/loot_tables.yaml` present)
-[x] Add item table for rarities (loot tables exist)
 [x] Add crate opening animation in embeds (`chronix_bot/cogs/gameplay/crates.py` implemented)
 [~] Add special event crates (event table added in `data/loot_tables.yaml` — event scheduling/activation windows pending)
 [~] Implement rarity balancing algorithm (basic rarity_score and `is_rare` marking implemented; tuning and balanced algorithm pending)
@@ -238,6 +193,7 @@ Phase 9 - Lootboxes and Crates
 	- Add per-guild rare-drop announcement channel option and permission checks
 	- Add CLI/admin tools to create/enable event crates with windows
 
+
 Phase 10 - Pets System
 ------------------------
 [ ] Create pet data structure with traits and rarity
@@ -250,8 +206,8 @@ Phase 10 - Pets System
 [ ] Add leaderboard for pets and trainers
 [ ] Add pet logs for wins and losses
 [ ] Add random event system for pet discovery
-
->>>>>>> Cursor-Branch
+[ ] Add pet images/avatars and visual status embeds
+[ ] Add pet trading and marketplace entries
 [ ] Add pet images/avatars and visual status embeds
 [ ] Add pet trading and marketplace entries
 

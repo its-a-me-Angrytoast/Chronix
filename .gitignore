@@ -220,20 +220,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+# Cursor
+.cursorignore
+.cursorindexingignore
 
-<<<<<<< HEAD
-=======
-<<<<<<< HEAD
-#files
-file.txt
+# Project files
 .github/
-=======
->>>>>>> Cursor-Branch
-#files -- leave ths part
 f.txt
-
-
-<<<<<<< HEAD
-=======
->>>>>>> 3435551 (feat: Implement banking system with deposits, withdrawals, and interest application)
->>>>>>> Cursor-Branch

@@ -103,17 +103,6 @@ def generate_loot(table: str = "basic") -> Dict[str, Any]:
 
     # Items: decide 0..N items, for now 0 or 1 item with weighted chance
     items_def = spec.get("items", [])
-<<<<<<< HEAD
-    drop = _weighted_choice(items_def)
-    items: List[Dict[str, Any]] = []
-    if drop is not None:
-        # apply a simple drop chance derived from weight vs sum (already applied in weighted_choice)
-        # We'll randomly decide whether the chosen item actually dropped, using a conservative multiplier.
-        # This keeps most hunts yielding coins and occasional item drops.
-        chance = min(0.40 + (drop.get("weight", 1) / 200.0), 0.95)
-        if _RNG.random() < chance:
-            items.append(drop.copy())
-=======
     items: List[Dict[str, Any]] = []
     if items_def:
         # compute total weight for diagnostics and rarity scoring
@@ -136,7 +125,6 @@ def generate_loot(table: str = "basic") -> Dict[str, Any]:
                 rarity_label = str(drop.get("rarity", "common")).lower()
                 chosen["is_rare"] = rarity_label in ("epic", "legendary") or (rarity_score > 0.80)
                 items.append(chosen)
->>>>>>> Cursor-Branch
 
     return {"coins": coins, "items": items}
 
