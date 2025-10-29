@@ -168,6 +168,7 @@ Phase 9 - Lootboxes and Crates
 [x] Add lootbox system with rarity tiers (`data/loot_tables.yaml` present)
 [x] Add item table for rarities (loot tables exist)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 [x] Add crate opening animation in embeds (`crates.py` implemented)
 [ ] Add special event crates
 [ ] Implement rarity balancing algorithm
@@ -180,6 +181,8 @@ Phase 9 - Lootboxes and Crates
 [ ] Add gifting and tradeable crate items
 [ ] Add seasonal/limited crates with activation windows
 =======
+=======
+>>>>>>> Stashed changes
 [x] Add crate opening animation in embeds (`chronix_bot/cogs/gameplay/crates.py` implemented)
 [~] Add special event crates (event table added in `data/loot_tables.yaml` — event scheduling/activation windows pending)
 [~] Implement rarity balancing algorithm (basic rarity_score and `is_rare` marking implemented; tuning and balanced algorithm pending)
@@ -195,6 +198,9 @@ Phase 9 - Lootboxes and Crates
 	- Add rarity analytics and per-guild drop history views
 	- Add per-guild rare-drop announcement channel option and permission checks
 	- Add CLI/admin tools to create/enable event crates with windows
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
 
 Phase 10 - Pets System

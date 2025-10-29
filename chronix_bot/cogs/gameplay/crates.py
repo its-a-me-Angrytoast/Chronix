@@ -273,8 +273,11 @@ class Crates(commands.Cog):
         await self._reveal_crate(interaction, crate_type)
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> Cursor-Branch
 =======
+=======
+>>>>>>> Stashed changes
     @app_commands.command(name="crate_gift")
     @app_commands.describe(member="Member to gift the crate to", crate_type="Type of crate to gift")
     async def slash_gift_crate(self, interaction: discord.Interaction, member: discord.Member, crate_type: str = "basic") -> None:
@@ -310,6 +313,9 @@ class Crates(commands.Cog):
 
         await interaction.response.send_message(embed=helpers.make_embed("Your Inventory", "\n".join(lines)), ephemeral=True)
 
+<<<<<<< Updated upstream
+>>>>>>> Stashed changes
+=======
 >>>>>>> Stashed changes
     @commands.command(name="crate_gift", aliases=["giftcrate", "crategift"])
     async def gift_crate(self, ctx: commands.Context, member: discord.Member, crate_type: str = "basic") -> None:
