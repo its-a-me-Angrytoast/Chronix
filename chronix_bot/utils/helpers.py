@@ -1,9 +1,16 @@
-"""Small helpers and embed templates for Phase 1."""
+"""Small helpers and embed templates used across cogs.
+
+This module centralizes embed styling so all cogs present a consistent
+visual theme. The `make_embed` helper adds a default colour, timestamp and
+footer. Callers may override the colour with the `colour` argument.
+"""
 from typing import Dict, Optional
 import discord
 import re
-from datetime import timedelta
+from datetime import datetime
 
+
+# Basic emoji map used by economy / UI helpers
 EMOJI: Dict[str, str] = {
     "chrons": "💠",
     "gems": "💎",
@@ -11,17 +18,27 @@ EMOJI: Dict[str, str] = {
 }
 
 
+# Default theme colour (hex). Change to match your brand.
+DEFAULT_COLOUR = 0x5B6EAE
+_FOOTER_TEXT = "Chronix"
+
+
 def make_embed(title: str, description: str, colour: Optional[int] = None) -> discord.Embed:
     """Create a small embed used by many commands.
+
+    Embeds produced by this helper include a consistent colour (unless
+    overridden), a timestamp and a footer to help with visual consistency.
 
     Args:
         title: embed title
         description: embed body
-        colour: optional integer colour
+        colour: optional integer colour (0xRRGGBB)
     """
     e = discord.Embed(title=title, description=description)
-    if colour is not None:
-        e.colour = colour
+    e.colour = colour if colour is not None else DEFAULT_COLOUR
+    e.timestamp = datetime.utcnow()
+    # keep footer minimal — can be expanded to include version or shard.
+    e.set_footer(text=_FOOTER_TEXT)
     return e
 
 

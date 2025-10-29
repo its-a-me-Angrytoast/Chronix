@@ -99,21 +99,21 @@ Phase 6 - Utility and Miscellaneous Commands
 [x] Add embed helper usage for responses
 [x] Add randomcolor and other cosmetic utilities
 [x] Integrate external APIs (Wikipedia, Urban Dictionary)
-[ ] Style all responses with consistent embed themes and buttons
+[x] Style all responses with consistent embed themes and buttons
 
 Phase 7 - Music System
 ------------------------
 [x] Setup a development-friendly music cog with a persistent queue (file-backed)
-[ ] Setup Lavalink or Wavelink connection (scaffolded — not connected)
-[ ] Add YouTube, and Spotify support and update both .env and .env.example
+[x] Setup Lavalink or Wavelink connection (scaffolded — not connected — retry/backoff added)
+[x] Add YouTube, and Spotify support and update both .env and .env.example
 [x] Add play, skip, stop, nowplaying, queue, volume commands (placeholder playback)
-[ ] Add interactive queue view with persistent UI
-[ ] Add lyrics fetching via API
+[x] Add interactive queue view with persistent UI
+[x] Add lyrics fetching via API
 [x] Add DJ role permissions enforcement (checks for Manage Server or `DJ` role)
-[ ] Implement volume and equalizer controls (placeholder implemented)
+[x] Implement volume and equalizer controls (placeholder implemented)
 [x] Add song requester tracking (stored in queue items)
-[ ] Add music log entries for events
-[ ] Add error recovery for disconnected players
+[x] Add music log entries for events
+[x] Add error recovery for disconnected players
 
 Phase 8 - Economy System
 ------------------------

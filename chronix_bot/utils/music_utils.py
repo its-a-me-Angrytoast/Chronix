@@ -105,3 +105,44 @@ async def spotify_search_client(query: str) -> Optional[str]:
                 return track.get("external_urls", {}).get("spotify")
     except Exception:
         return None
+
+
+async def fetch_lyrics(query: str) -> Optional[str]:
+    """Attempt to fetch lyrics for a song.
+
+    Behavior:
+    - If the query looks like "Artist - Title" we try lyrics.ovh first.
+    - Otherwise we attempt a title-only lookup using some-random-api.ml as a
+      fallback. Either may fail; in that case return None.
+    """
+    if not query or not isinstance(query, str):
+        return None
+
+    # Prefer 'Artist - Title' form for lyrics.ovh
+    if " - " in query:
+        artist, title = [p.strip() for p in query.split(" - ", 1)]
+        url = f"https://api.lyrics.ovh/v1/{artist}/{title}"
+        try:
+            async with aiohttp.ClientSession() as session:
+                async with session.get(url, timeout=6) as r:
+                    if r.status != 200:
+                        # try fallback
+                        pass
+                    else:
+                        js = await r.json()
+                        return js.get("lyrics")
+        except Exception:
+            pass
+
+    # Fallback: some-random-api.ml lyrics endpoint (title-only). This is best-effort.
+    try:
+        async with aiohttp.ClientSession() as session:
+            safe_q = query.replace(" ", "%20")
+            url2 = f"https://some-random-api.ml/lyrics?title={safe_q}"
+            async with session.get(url2, timeout=6) as r2:
+                if r2.status != 200:
+                    return None
+                js2 = await r2.json()
+                return js2.get("lyrics")
+    except Exception:
+        return None

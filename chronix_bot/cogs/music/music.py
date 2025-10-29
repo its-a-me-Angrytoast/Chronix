@@ -31,6 +31,7 @@ import os
 from chronix_bot.utils import music_queue
 from chronix_bot.utils import helpers
 from chronix_bot.utils import music_utils
+from chronix_bot.utils import logger as chronix_logger
 
 log = logging.getLogger(__name__)
 
@@ -95,6 +96,10 @@ class Music(commands.Cog):
         track = {"title": query, "url": url, "requested_by": ctx.author.id}
         music_queue.enqueue(ctx.guild.id if ctx.guild else 0, track)
         await ctx.send(embed=helpers.make_embed("Enqueued", f"{query} — requested by {ctx.author.display_name}"))
+        try:
+            chronix_logger.enqueue_log({"type": "music_enqueue", "guild": ctx.guild.id if ctx.guild else None, "title": query, "by": ctx.author.id})
+        except Exception:
+            pass
         # If wavelink is available and nothing is playing, attempt to start playback
         if self._wavelink_available:
             try:
@@ -124,6 +129,10 @@ class Music(commands.Cog):
         view = QueuePanelView(self, guild_id)
         msg = await ctx.send(embed=embed, view=view)
         music_queue.set_panel_message(guild_id, ctx.channel.id, msg.id)
+        try:
+            chronix_logger.enqueue_log({"type": "music_queue_panel", "guild": guild_id, "channel": ctx.channel.id, "message": msg.id, "by": ctx.author.id})
+        except Exception:
+            pass
         # keep view reference so callbacks stay alive
         self._views[guild_id] = view
         await ctx.send("Queue panel created/updated.", delete_after=5.0)
@@ -138,6 +147,10 @@ class Music(commands.Cog):
             await ctx.send("Nothing to skip.")
             return
         await ctx.send(embed=helpers.make_embed("Skipped", f"Skipped: {skipped.get('title')}"))
+        try:
+            chronix_logger.enqueue_log({"type": "music_skip", "guild": ctx.guild.id if ctx.guild else None, "title": skipped.get('title'), "by": ctx.author.id})
+        except Exception:
+            pass
 
     @commands.command(name="nowplaying")
     async def nowplaying(self, ctx: commands.Context):
@@ -147,6 +160,19 @@ class Music(commands.Cog):
             return
         await ctx.send(embed=helpers.make_embed("Now Playing", f"{now.get('title')} — requested by <@{now.get('requested_by')}>") )
 
+    @commands.command(name="lyrics")
+    async def lyrics(self, ctx: commands.Context, *, query: str):
+        """Fetch lyrics for a track (artist - title preferred)."""
+        try:
+            lyrics = await music_utils.fetch_lyrics(query)
+        except Exception:
+            lyrics = None
+        if not lyrics:
+            await ctx.send("Lyrics not found for that query.")
+            return
+        payload = lyrics if len(lyrics) <= 1900 else lyrics[:1896] + "..."
+        await ctx.send(embed=helpers.make_embed(f"Lyrics: {query}", payload))
+
     @commands.command(name="stop")
     async def stop(self, ctx: commands.Context):
         if not self._check_dj(ctx):
@@ -154,6 +180,10 @@ class Music(commands.Cog):
             return
         music_queue.clear_queue(ctx.guild.id if ctx.guild else 0)
         await ctx.send(embed=helpers.make_embed("Stopped", "Cleared queue and (would) stop playback."))
+        try:
+            chronix_logger.enqueue_log({"type": "music_stop", "guild": ctx.guild.id if ctx.guild else None, "by": ctx.author.id})
+        except Exception:
+            pass
 
     async def _refresh_panel(self, guild_id: int):
         meta = music_queue.get_panel_message(guild_id)
