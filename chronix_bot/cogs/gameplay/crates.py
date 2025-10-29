@@ -143,6 +143,69 @@ class Crates(commands.Cog):
         # Run reveal if confirmed
         await self._reveal_crate(interaction, crate_type)
 
+<<<<<<< Updated upstream
+=======
+    @app_commands.command(name="crate_gift")
+    @app_commands.describe(member="Member to gift the crate to", crate_type="Type of crate to gift")
+    async def slash_gift_crate(self, interaction: discord.Interaction, member: discord.Member, crate_type: str = "basic") -> None:
+        """Slash command: gift an unopened crate to another user."""
+        try:
+            crate = inventory_utils.add_unopened_crate(member.id, crate_type)
+            await interaction.response.send_message(f"Gave a {crate_type} crate to {member.mention}! (ID: {crate.get('crate_id')})", ephemeral=True)
+            # attempt to DM the recipient
+            try:
+                await member.send(f"You received a {crate_type} crate from {interaction.user.display_name}! Use the bot to open it.")
+            except Exception:
+                # ignore DM failures
+                pass
+        except Exception as exc:
+            await interaction.response.send_message(f"Failed to gift crate: {exc}", ephemeral=True)
+
+    @app_commands.command(name="mycrates")
+    async def slash_mycrates(self, interaction: discord.Interaction) -> None:
+        """Slash command: list your unopened crates and misc inventory items."""
+        crates = inventory_utils.list_unopened_crates(interaction.user.id)
+        items = inventory_utils.list_items(interaction.user.id)
+        lines = []
+        if crates:
+            for c in crates:
+                lines.append(f"Crate: {c.get('crate_type')} (ID: {c.get('crate_id')})")
+        else:
+            lines.append("No unopened crates.")
+
+        if items:
+            lines.append("\nMisc Items:")
+            for it in items:
+                lines.append(f"• {it.get('name')} (ID: {it.get('item_id')})")
+
+        await interaction.response.send_message(embed=helpers.make_embed("Your Inventory", "\n".join(lines)), ephemeral=True)
+
+    @commands.command(name="crate_gift", aliases=["giftcrate", "crategift"])
+    async def gift_crate(self, ctx: commands.Context, member: discord.Member, crate_type: str = "basic") -> None:
+        """Gift an unopened crate to another user (adds to their inventory)."""
+        crate = inventory_utils.add_unopened_crate(member.id, crate_type)
+        await ctx.send(embed=helpers.make_embed("Crate Gifted", f"Gave a {crate_type} crate to {member.mention}! (ID: {crate.get('crate_id')})"))
+
+    @commands.command(name="mycrates", aliases=["crates_list", "unopened"])
+    async def my_crates(self, ctx: commands.Context) -> None:
+        """List your unopened crates and misc items in inventory."""
+        crates = inventory_utils.list_unopened_crates(ctx.author.id)
+        items = inventory_utils.list_items(ctx.author.id)
+        lines = []
+        if crates:
+            for c in crates:
+                lines.append(f"Crate: {c.get('crate_type')} (ID: {c.get('crate_id')})")
+        else:
+            lines.append("No unopened crates.")
+
+        if items:
+            lines.append("\nMisc Items:")
+            for it in items:
+                lines.append(f"• {it.get('name')} (ID: {it.get('item_id')})")
+
+        await ctx.send(embed=helpers.make_embed("Your Inventory", "\n".join(lines)))
+
+>>>>>>> Stashed changes
 
 async def setup(bot: commands.Bot) -> None:
     """Add the crates cog to the bot."""
