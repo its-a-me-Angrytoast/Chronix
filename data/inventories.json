@@ -1,0 +1,24 @@
+{
+  "777": {
+    "gems": [
+      {
+        "gem_id": 1761738629578,
+        "gem_type": "ruby",
+        "power": 2
+      },
+      {
+        "gem_id": 1761738629581,
+        "gem_type": "ruby",
+        "power": 2
+      }
+    ],
+    "pets": [
+      {
+        "pet_id": 1761738629584,
+        "species": "fox",
+        "level": 2,
+        "xp": 20
+      }
+    ]
+  }
+}
