@@ -80,10 +80,15 @@ Phase 6 - Utility and Miscellaneous Commands
 [x] Add serverinfo, userinfo, and roleinfo commands
 [x] Add avatar command
 [x] Implement poll command
-[ ] Add banner and emojiinfo
+[x] Add banner and emojiinfo
 [x] Add say command (owner-only)
 [x] Add choose and roll utilities
-[ ] Implement reminder and timer commands
+[x] Implement reminder and timer commands
+[x] Add translate and dictionary lookup commands
+[x] Add weather and fact APIs
+[x] Add math and conversion tools
+[x] Add randomcolor utility
+[x] Add Wiki and Urban Dictionary lookup commands
 [ ] Add text translation and dictionary lookups
 [ ] Add weather and fact APIs
 [ ] Add math and conversion tools
