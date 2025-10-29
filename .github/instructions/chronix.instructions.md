@@ -7,7 +7,7 @@ applyTo: '**'
 - Always fix Bugs,errors,or issues in the codebase before adding new features.
 - Ensure that all code is well-documented and follows best practices.
 - Fix all problems before moving to next phase.
-
+- Do not make scaffold code only make final production ready code.
 # CHRONIX — IMPLEMENTATION FOR COPILOT
 
 TODO: Make each point(marked by '-') into a todo task

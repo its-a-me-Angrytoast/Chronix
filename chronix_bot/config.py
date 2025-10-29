@@ -22,4 +22,8 @@ class Settings:
     OWNER_ID: Optional[int] = int(os.getenv("OWNER_ID")) if os.getenv("OWNER_ID") else None
     FORCE_OWNER_OVERRIDE: bool = os.getenv("FORCE_OWNER_OVERRIDE", "false").lower() in ("1", "true", "yes")
     DEV_MODE: bool = os.getenv("DEV_MODE", "true").lower() in ("1", "true", "yes")
+    # Database
+    DATABASE_URL: Optional[str] = os.getenv("DATABASE_URL")
+    DB_POOL_MIN: int = int(os.getenv("DB_POOL_MIN", "1"))
+    DB_POOL_MAX: int = int(os.getenv("DB_POOL_MAX", "10"))
 
