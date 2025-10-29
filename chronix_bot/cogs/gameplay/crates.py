@@ -15,6 +15,11 @@ from discord import app_commands
 from chronix_bot.utils import helpers
 from chronix_bot.utils import loot as loot_util
 from chronix_bot.utils import db as db_utils
+<<<<<<< HEAD
+=======
+from chronix_bot.utils import inventory as inventory_utils
+from chronix_bot.utils import logger as logger_utils
+>>>>>>> Cursor-Branch
 
 
 class CrateView(discord.ui.View):
@@ -67,11 +72,19 @@ class Crates(commands.Cog):
         embed.description = "Items materialize..."
         await message.edit(embed=embed)
         await asyncio.sleep(1.0)
+<<<<<<< HEAD
         
         # Generate and reveal loot
         loot = loot_util.generate_loot(crate_type)
         coins = int(loot.get("coins", 0))
         
+=======
+
+        # Generate and reveal loot
+        loot = loot_util.generate_loot(crate_type)
+        coins = int(loot.get("coins", 0))
+
+>>>>>>> Cursor-Branch
         # Award coins if any (uses safe transaction)
         new_balance = None
         if coins > 0:
@@ -84,26 +97,84 @@ class Crates(commands.Cog):
                     f"Error awarding crate coins: {exc}", ephemeral=True
                 )
                 return
+<<<<<<< HEAD
         
         # Build reveal embed
+=======
+
+        # Persist item drops and build reveal embed
+>>>>>>> Cursor-Branch
         description_lines = []
         if coins > 0:
             description_lines.extend([
                 f"You found {helpers.format_chrons(coins)}!",
                 f"New balance: {helpers.format_chrons(new_balance)}"
             ])
+<<<<<<< HEAD
             
         items = loot.get("items", [])
         if items:
             item_lines = [f"• {i.get('name')} ({i.get('rarity')})" for i in items]
             description_lines.append("\nItems:\n" + "\n".join(item_lines))
             
+=======
+
+        items = loot.get("items", [])
+        rare_broadcasts = []
+        if items:
+            item_lines = []
+            for i in items:
+                item_lines.append(f"• {i.get('name')} ({i.get('rarity')})")
+                # persist drop into inventory according to type
+                itype = str(i.get("type", "misc")).lower()
+                if itype == "gem":
+                    inventory_utils.add_gem(interaction.user.id, i.get("name"), power=1)
+                elif itype == "pet":
+                    inventory_utils.add_pet(interaction.user.id, i.get("name"))
+                else:
+                    inventory_utils.add_item(interaction.user.id, i.get("name"), meta={"rarity": i.get("rarity")})
+
+                # collect rare drops for broadcast/logging
+                if i.get("is_rare"):
+                    rare_broadcasts.append(i)
+
+            description_lines.append("\nItems:\n" + "\n".join(item_lines))
+
+>>>>>>> Cursor-Branch
         embed = helpers.make_embed(
             "Crate Results",
             "\n".join(description_lines) or "The crate was empty!"
         )
         await message.edit(embed=embed)
 
+<<<<<<< HEAD
+=======
+        # Enqueue a crate opening log (non-blocking)
+        try:
+            q = logger_utils.start_background_writer()
+            q.put_nowait({
+                "event": "crate_open",
+                "user_id": int(interaction.user.id),
+                "crate_type": crate_type,
+                "coins": coins,
+                "items": [dict(i) for i in items],
+            })
+        except Exception:
+            # never raise for logging failures
+            pass
+
+        # Broadcast rare drops to the channel where the crate was opened
+        if rare_broadcasts:
+            try:
+                chan = interaction.channel or getattr(interaction, "channel", None)
+                if chan is not None:
+                    for r in rare_broadcasts:
+                        await chan.send(f"✨ {interaction.user.mention} just found **{r.get('name')}** ({r.get('rarity')}) in a {crate_type} crate!")
+            except Exception:
+                # ignore broadcast failures
+                pass
+
+>>>>>>> Cursor-Branch
     @commands.command(name="crate", aliases=["opencrate", "open"])
     @commands.cooldown(1, 5, commands.BucketType.user)
     async def open_crate(self, ctx: commands.Context, crate_type: str = "basic") -> None:
@@ -120,6 +191,14 @@ class Crates(commands.Cog):
         if not view.confirmed:
             return
             
+<<<<<<< HEAD
+=======
+        # If user has an unopened crate of that type, consume it first
+        consumed = inventory_utils.consume_unopened_crate(ctx.author.id, crate_type)
+        if consumed:
+            await ctx.send(f"Consumed one unopened {crate_type} crate from your inventory.")
+
+>>>>>>> Cursor-Branch
         # Run reveal if confirmed
         await self._reveal_crate(ctx, crate_type)
         
@@ -140,6 +219,7 @@ class Crates(commands.Cog):
         if not view.confirmed:
             return
             
+<<<<<<< HEAD
         # Run reveal if confirmed
         await self._reveal_crate(interaction, crate_type)
 
@@ -180,6 +260,19 @@ class Crates(commands.Cog):
 
         await interaction.response.send_message(embed=helpers.make_embed("Your Inventory", "\n".join(lines)), ephemeral=True)
 
+=======
+        # If user has an unopened crate of that type, consume it first
+        try:
+            consumed = inventory_utils.consume_unopened_crate(interaction.user.id, crate_type)
+            if consumed:
+                await interaction.followup.send(f"Consumed one unopened {crate_type} crate from your inventory.", ephemeral=True)
+        except Exception:
+            pass
+
+        # Run reveal if confirmed
+        await self._reveal_crate(interaction, crate_type)
+
+>>>>>>> Cursor-Branch
     @commands.command(name="crate_gift", aliases=["giftcrate", "crategift"])
     async def gift_crate(self, ctx: commands.Context, member: discord.Member, crate_type: str = "basic") -> None:
         """Gift an unopened crate to another user (adds to their inventory)."""
@@ -205,7 +298,10 @@ class Crates(commands.Cog):
 
         await ctx.send(embed=helpers.make_embed("Your Inventory", "\n".join(lines)))
 
+<<<<<<< HEAD
 >>>>>>> Stashed changes
+=======
+>>>>>>> Cursor-Branch
 
 async def setup(bot: commands.Bot) -> None:
     """Add the crates cog to the bot."""

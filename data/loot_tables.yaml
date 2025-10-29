@@ -33,3 +33,28 @@ forest:
       type: gem
       rarity: rare
       weight: 15
+<<<<<<< HEAD
+=======
+
+spring_festival:
+  coins:
+    min: 50
+    max: 300
+  items:
+    - name: Spring Blossom
+      type: consumable
+      rarity: common
+      weight: 60
+    - name: Lucky Clover
+      type: gem
+      rarity: rare
+      weight: 25
+    - name: Festival Phoenix Egg
+      type: pet
+      rarity: epic
+      weight: 8
+    - name: Golden Chalice
+      type: misc
+      rarity: legendary
+      weight: 2
+>>>>>>> Cursor-Branch

@@ -103,6 +103,7 @@ def generate_loot(table: str = "basic") -> Dict[str, Any]:
 
     # Items: decide 0..N items, for now 0 or 1 item with weighted chance
     items_def = spec.get("items", [])
+<<<<<<< HEAD
     drop = _weighted_choice(items_def)
     items: List[Dict[str, Any]] = []
     if drop is not None:
@@ -112,6 +113,30 @@ def generate_loot(table: str = "basic") -> Dict[str, Any]:
         chance = min(0.40 + (drop.get("weight", 1) / 200.0), 0.95)
         if _RNG.random() < chance:
             items.append(drop.copy())
+=======
+    items: List[Dict[str, Any]] = []
+    if items_def:
+        # compute total weight for diagnostics and rarity scoring
+        weights = [float(i.get("weight", 1)) for i in items_def]
+        total_weight = sum(weights) if weights else 1.0
+        drop = _weighted_choice(items_def)
+        if drop is not None:
+            # base chance depends on weight vs total
+            base_prob = (drop.get("weight", 1) / total_weight) if total_weight > 0 else 0.01
+            # conservative multiplier keeps drops occasional
+            chance = min(0.35 + base_prob * 0.75, 0.95)
+            if _RNG.random() < chance:
+                chosen = drop.copy()
+                # derive a simple rarity score (lower weight -> higher rarity_score)
+                w = float(drop.get("weight", 1))
+                # score in range (0..1], where closer to 1 is rarer
+                rarity_score = 1.0 - min(w / (max(weights) if weights else w), 1.0)
+                chosen["rarity_score"] = round(rarity_score, 3)
+                # mark a 'is_rare' flag for epic/legendary or very high rarity_score
+                rarity_label = str(drop.get("rarity", "common")).lower()
+                chosen["is_rare"] = rarity_label in ("epic", "legendary") or (rarity_score > 0.80)
+                items.append(chosen)
+>>>>>>> Cursor-Branch
 
     return {"coins": coins, "items": items}
 

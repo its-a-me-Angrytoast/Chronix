@@ -40,7 +40,14 @@ def _save_all(data: Dict[str, Any]) -> None:
 
 def _user_bucket(user_id: int) -> Dict[str, Any]:
     data = _load_all()
+<<<<<<< HEAD
     return data.setdefault(str(user_id), {"gems": [], "pets": []})
+=======
+    # Ensure we have a compact, forward-compatible bucket structure
+    return data.setdefault(
+        str(user_id), {"gems": [], "pets": [], "items": [], "unopened_crates": []}
+    )
+>>>>>>> Cursor-Branch
 
 
 def add_gem(user_id: int, gem_type: str, power: int = 1) -> Dict[str, Any]:
@@ -89,7 +96,11 @@ def merge_gems(user_id: int, gem_type: str, count: int = 2) -> Dict[str, Any]:
 def add_pet(user_id: int, species: str) -> Dict[str, Any]:
     with _lock:
         data = _load_all()
+<<<<<<< HEAD
         bucket = data.setdefault(str(user_id), {"gems": [], "pets": []})
+=======
+        bucket = data.setdefault(str(user_id), {"gems": [], "pets": [], "items": [], "unopened_crates": []})
+>>>>>>> Cursor-Branch
         pet_id = int(time.time() * 1000)
         pet = {"pet_id": pet_id, "species": species, "level": 1, "xp": 0}
         bucket.setdefault("pets", []).append(pet)
@@ -106,7 +117,11 @@ def list_pets(user_id: int) -> List[Dict[str, Any]]:
 def feed_pet(user_id: int, pet_id: int, food_xp: int = 10) -> Dict[str, Any]:
     with _lock:
         data = _load_all()
+<<<<<<< HEAD
         bucket = data.setdefault(str(user_id), {"gems": [], "pets": []})
+=======
+        bucket = data.setdefault(str(user_id), {"gems": [], "pets": [], "items": [], "unopened_crates": []})
+>>>>>>> Cursor-Branch
         pets = bucket.setdefault("pets", [])
         for p in pets:
             if int(p.get("pet_id")) == int(pet_id):
@@ -118,3 +133,67 @@ def feed_pet(user_id: int, pet_id: int, food_xp: int = 10) -> Dict[str, Any]:
                 _save_all(data)
                 return p
         raise ValueError("Pet not found")
+<<<<<<< HEAD
+=======
+
+
+def add_item(user_id: int, name: str, meta: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
+    """Add a generic item to a user's inventory (misc items).
+
+    Stores an item dict with an id, name and optional meta information.
+    """
+    with _lock:
+        data = _load_all()
+        bucket = data.setdefault(str(user_id), {"gems": [], "pets": [], "items": [], "unopened_crates": []})
+        item_id = int(time.time() * 1000)
+        item = {"item_id": item_id, "name": name, "meta": meta or {}}
+        bucket.setdefault("items", []).append(item)
+        _save_all(data)
+        return item
+
+
+def list_items(user_id: int) -> List[Dict[str, Any]]:
+    data = _load_all()
+    bucket = data.get(str(user_id), {})
+    return bucket.get("items", [])
+
+
+def add_unopened_crate(user_id: int, crate_type: str) -> Dict[str, Any]:
+    """Add an unopened crate to a user's inventory.
+
+    Returns the crate dict.
+    """
+    with _lock:
+        data = _load_all()
+        bucket = data.setdefault(str(user_id), {"gems": [], "pets": [], "items": [], "unopened_crates": []})
+        crate_id = int(time.time() * 1000)
+        crate = {"crate_id": crate_id, "crate_type": crate_type}
+        bucket.setdefault("unopened_crates", []).append(crate)
+        _save_all(data)
+        return crate
+
+
+def list_unopened_crates(user_id: int) -> List[Dict[str, Any]]:
+    data = _load_all()
+    bucket = data.get(str(user_id), {})
+    return bucket.get("unopened_crates", [])
+
+
+def consume_unopened_crate(user_id: int, crate_type: str) -> Optional[Dict[str, Any]]:
+    """Consume (remove) a single unopened crate of the given type for the user.
+
+    Returns the consumed crate dict or None if none found.
+    """
+    with _lock:
+        data = _load_all()
+        bucket = data.setdefault(str(user_id), {"gems": [], "pets": [], "items": [], "unopened_crates": []})
+        crates = bucket.setdefault("unopened_crates", [])
+        for i, c in enumerate(crates):
+            if c.get("crate_type") == crate_type:
+                removed = crates.pop(i)
+                bucket["unopened_crates"] = crates
+                data[str(user_id)] = bucket
+                _save_all(data)
+                return removed
+    return None
+>>>>>>> Cursor-Branch
