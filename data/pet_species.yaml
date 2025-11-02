@@ -1,0 +1,32 @@
+# Basic pet species definitions for Chronix
+# name: base_power, evolve_to (optional), evolve_level (optional), image_url (optional)
+
+fox:
+  base_power: 10
+  evolve_to: flame_fox
+  evolve_level: 10
+  image: ""
+
+flame_fox:
+  base_power: 25
+  image: ""
+
+cat:
+  base_power: 8
+  evolve_to: saber_cat
+  evolve_level: 12
+  image: ""
+
+saber_cat:
+  base_power: 30
+  image: ""
+
+hound:
+  base_power: 12
+  evolve_to: war_hound
+  evolve_level: 15
+  image: ""
+
+war_hound:
+  base_power: 40
+  image: ""

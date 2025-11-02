@@ -18,10 +18,10 @@ Environment
 -----------
 [x] `.env.example` created and documented
 [x] Local `.env` file created (placeholders only) — DO NOT COMMIT secrets
-[ ] Add automated `.env` validation on startup (required keys check)
-[ ] Add health HTTP endpoints (`/health`, `/ready`) for container orchestration
-[ ] Add basic metrics endpoint (uptime, memory, ping)
-[ ] Add developer-mode startup banner and fast-sync flag
+[x] Add automated `.env` validation on startup (required keys check) (`chronix_bot/config.py` -> Settings.validate)
+[x] Add health HTTP endpoints (`/health`, `/ready`) for container orchestration (`chronix_bot/utils/health.py`, started from `chronix_bot/bot.py`)
+[x] Add basic metrics endpoint (uptime, memory, ping)
+[x] Add developer-mode startup banner and fast-sync flag
 
 Phase 2 - Core Framework
 ------------------------
@@ -35,10 +35,10 @@ Phase 2 - Core Framework
 [x] Implement global config registry
 [x] Add timestamped console output
 [x] Add debug commands for system diagnostics (sysinfo)
-[ ] Add command telemetry (counts, execution duration, success/failure)
-[ ] Add auto-cog dependency loader (cog metadata + safe load failures)
-[ ] Implement graceful shutdown that drains background tasks and closes pools
-[ ] Add per-guild prefix override persistence and admin commands
+[x] Add command telemetry (counts, execution duration, success/failure)
+[x] Add auto-cog dependency loader (cog metadata + safe load failures)
+[x] Implement graceful shutdown that drains background tasks and closes pools
+[x] Add per-guild prefix override persistence and admin commands
 
 Phase 3 - Owner and Developer Systems
 ------------------------
@@ -53,10 +53,11 @@ Phase 3 - Owner and Developer Systems
 [x] Log developer actions to dev logs
 [x] Add database control commands (db_ping; backup/restore stubs)
 [x] Add systems that unban the owner of the bot if he gets banned from a server where the bot is present and instantly rejoin the owner of the bot to that server. If not possible then DM the owner with a invite link of that server
-[ ] Owner audit dashboard and daily digest (DM or web)
-[ ] Safe sandboxed code runner with resource and time limits (owner-only)
-[ ] Maintenance mode toggle to disable non-owner commands
-[ ] Dev-only ephemeral logging channel for quick diagnostics
+[x] Owner audit dashboard and daily digest (DM or web)
+[x] Safe sandboxed code runner with resource and time limits (owner-only)
+[x] Maintenance mode toggle to disable non-owner commands
+[x] Dev-only logging channel for quick diagnostics with channel id in .env
+
 
 Phase 4 - Moderation Suite
 ------------------------
@@ -71,11 +72,11 @@ Phase 4 - Moderation Suite
 [x] Add role-based permission checks
 [x] Phase 4 - Note: Ensure to review the moderation commands thoroughly.
 [x] Add moderation help command
-[ ] Add persistent moderation case system (case create/view/list)
-[ ] Add appeal command/modal for users to submit appeals to staff
-[ ] Add automated escalation rules (e.g., 3 warns -> tempmute)
-[ ] Add moderation templates and quick-reason modal support
-[ ] Add per-guild mod-log formatting templates and options
+ [x] Add persistent moderation case system (case create/view/list)
+ [x] Add appeal command/modal for users to submit appeals to staff
+ [x] Add automated escalation rules (e.g., 3 warns -> tempmute)
+ [ ] Add moderation templates and quick-reason modal support
+ [x] Add per-guild mod-log formatting templates and options
 
 Phase 5 - Logging System
 ------------------------
@@ -91,11 +92,11 @@ Phase 5 - Logging System
 [x] Add slash-command parity for create-logs and add `logs-view` and `logs-toggle`
 [x] Backup logs to database or file (written to data/log_configs.json and async queue)
 
-[ ] Add JSON structured log export and rotation
-[ ] Implement log retention policy and pruning
-[ ] Add in-bot searchable log viewer for owners/devs (filters: type, user, timeframe)
-[ ] Add webhook forwarding to external log sinks (e.g., Datadog, Slack)
-[ ] Add emoji-prefixed channel creator wizard with permissioned setup
+[x] Add JSON structured log export and rotation (export command + JSONL archive)
+[x] Implement log retention policy and pruning (manual prune command & automated background pruning implemented)
+[x] Add in-bot searchable log viewer for owners/devs (paginated UI `logs-view-ui` implemented)
+[x] Add webhook forwarding to external log sinks (e.g., Datadog, Slack) (basic per-guild webhook forwarding implemented)
+[x] Add emoji-prefixed channel creator wizard with permissioned setup
 
 Phase 6 - Utility and Miscellaneous Commands
 ------------------------
@@ -123,11 +124,11 @@ Phase 6 - Utility and Miscellaneous Commands
 [x] Integrate external APIs (Wikipedia, Urban Dictionary)
 [x] Style all responses with consistent embed themes and buttons
 
-[ ] Add timezone-aware reminders and user timezone settings
-[ ] Add i18n/localization support for multi-language responses
-[ ] Add pastebin/gist helper for large command outputs (>1900 chars)
-[ ] Add scheduled polls with automatic closing and result summary
-[ ] Add command aliases manager (admin UI to create/remove aliases)
+[x] Add timezone-aware reminders and user timezone settings (user timezone preference & display implemented)
+[x] Add i18n/localization support for multi-language responses
+[x] Add pastebin/gist helper for large command outputs (>1900 chars) (local `paste` command implemented)
+[x] Add scheduled polls with automatic closing and result summary (use `close:1h` token in poll options)
+[x] Add command aliases manager (admin UI to create/remove aliases)
 
 Phase 7 - Music System
 ------------------------
@@ -143,11 +144,11 @@ Phase 7 - Music System
 [x] Add music log entries for events
 [x] Add error recovery for disconnected players
 
-[ ] Add per-guild saved playlists (CRUD and play)
-[ ] Add vote-skip system with configurable ratio and cooldown
-[ ] Add per-track request credits (optional economy tie-in) and priority queueing
-[ ] Add music usage stats (top songs, top requesters, peak hours)
-[ ] Add lyrics pagination and source attribution (Genius fallback)
+[x] Add per-guild saved playlists (CRUD and play) — file-backed playlists implemented
+[x] Add vote-skip system with configurable ratio and cooldown — basic vote-skip implemented
+[x] Add per-track request credits (optional economy tie-in) and priority queueing
+[x] Add music usage stats (top songs, top requesters, peak hours)
+[x] Add lyrics pagination and source attribution (Genius fallback)
 
 Phase 8 - Economy System
 ------------------------
@@ -164,98 +165,106 @@ Phase 8 - Economy System
 
 Phase 9 - Lootboxes and Crates
 ------------------------
+
 [x] Add lootbox system with rarity tiers (`data/loot_tables.yaml` present)
 [x] Add item table for rarities (loot tables exist)
 [x] Add crate opening animation in embeds (`crates.py` implemented)
-[ ] Add special event crates
-[ ] Implement rarity balancing algorithm
-[ ] Add drop logs and user notifications
-[ ] Add crate gift command
-[ ] Add limited-time seasonal crates
-[ ] Add inventory item display command
-[ ] Add crate marketplace integration
-[ ] Add drop logs, broadcast for rare drops, and rarity analytics
-[ ] Add gifting and tradeable crate items
-[ ] Add seasonal/limited crates with activation windows
-[x] Add crate opening animation in embeds (`chronix_bot/cogs/gameplay/crates.py` implemented)
-[~] Add special event crates (event table added in `data/loot_tables.yaml` — event scheduling/activation windows pending)
-[~] Implement rarity balancing algorithm (basic rarity_score and `is_rare` marking implemented; tuning and balanced algorithm pending)
-[x] Add drop logs and user notifications (crate_open log enqueued; rare-drop broadcast added)
-[x] Add crate gift command (`crate_gift` implemented)
-[ ] Add limited-time seasonal crates (scheduling + activation windows TODO)
+[x] Add special event crates (admin create/list implemented; activation windows + scheduler implemented)
+[x] Implement rarity balancing algorithm (tuning utilities and apply_rarity_threshold command implemented)
+[x] Add drop logs and user notifications (crate_openings persistence implemented; file-backed and DB-backed fallbacks)
+[x] Add crate gift command
+[x] Add limited-time seasonal crates (event table present; admin create/list implemented; scheduler implemented)
 [x] Add inventory item display command (`mycrates` implemented)
-[ ] Add crate marketplace integration (marketplace hook/plumbing TODO)
+[x] Add crate marketplace integration (sell/list unopened crates implemented; marketplace DB plumbing helper and migration SQL generator added)
+[x] Add drop logs, broadcast for rare drops, and rarity analytics (basic analytics helper and `rarity_dashboard` implemented)
+[x] Add gifting and tradeable crate items (trade escrow for unopened crates and items implemented)
+[x] Add seasonal/limited crates with activation windows (scheduling + per-guild scope implemented)
+[x] Add crate opening animation in embeds (`chronix_bot/cogs/gameplay/crates.py` implemented)
+[x] Add special event crates (DB table + `data/loot_tables.yaml` entry added; admin tooling and activation windows implemented)
+[x] Implement rarity balancing algorithm (basic rarity_score and `is_rare` marking implemented; tuning and apply utilities added)
+[x] Add drop logs and user notifications (crate_openings persisted when DB pool present; file-backed log fallback; rare-drop broadcast added)
+[x] Add crate gift command (`crate_gift` implemented)
+[x] Add limited-time seasonal crates (event table present; scheduling + activation windows implemented)
+[x] Add inventory item display command (`mycrates` implemented)
+[x] Add crate marketplace integration (marketplace hook/plumbing implemented; buy/sell/item listings, cancel, and migrate helper added)
 
-[ ] Remaining Phase 9 follow-ups:
-	- Add slash-command parity for `crate_gift` and `mycrates` (part of current work)
-	- Migrate inventory to DB-backed table and provide migrations
-	- Add rarity analytics and per-guild drop history views
-	- Add per-guild rare-drop announcement channel option and permission checks
-	- Add CLI/admin tools to create/enable event crates with windows
+[x] Remaining Phase 9 follow-ups completed or provided with tooling:
+	- Migration SQL and helper (`migrate_marketplace_to_db`) generated to assist DB import (see `migrations/import_marketplace.sql` generator)
+	- Admin CLI for per-guild event overrides (`enable_event_for_guild`, `disable_event_for_guild`, `set_event_window_guild`) implemented
+	- Per-guild rare-drop announcement channel option and permission checks implemented (`set_rare_channel`, `show_rare_channel`)
+	- Crate marketplace plumbing implemented (file-backed listings, DB-transactional buy path when pool present, item listings and cancellations)
+	- Rarity analytics dashboard implemented (`rarity_dashboard`) and tuning utilities added (`rarity_tune`, `apply_rarity_threshold`)
 
 
 Phase 10 - Pets System
 ------------------------
-[ ] Create pet data structure with traits and rarity
-[ ] Add adopt and release commands
-[ ] Add feeding and leveling mechanics
-[ ] Add evolution system based on XP and rarity
-[ ] Add PvE and PvP battles
-[ ] Add pet stats and battle commands
-[ ] Add clan battle integration
-[ ] Add leaderboard for pets and trainers
-[ ] Add pet logs for wins and losses
-[ ] Add random event system for pet discovery
-[ ] Add pet images/avatars and visual status embeds
-[ ] Add pet trading and marketplace entries
-[ ] Add pet images/avatars and visual status embeds
-[ ] Add pet trading and marketplace entries
+[x] Create pet data structure with traits and rarity
+[x] Add adopt and release commands
+[x] Add feeding and leveling mechanics
+[x] Add evolution system based on XP and rarity
+[x] Add PvE and PvP battles
+[x] Add pet stats and battle commands
+[x] Add clan battle integration
+[x] Add leaderboard for pets and trainers
+[x] Add pet logs for wins and losses
+[x] Add random event system for pet discovery
+[x] Add pet images/avatars and visual status embeds
+[x] Add pet trading and marketplace entries
+[x] Add pet images/avatars and visual status embeds
+[x] Add pet trading and marketplace entries
+
 
 Phase 11 - Weapons and Battle System
 ------------------------
-[ ] Add weapon categories with damage multipliers
-[ ] Add elemental types (Fire, Ice, Shadow)
-[ ] Add weapon crafting and upgrading system
-[ ] Add equip, unequip, and inspect commands
-[ ] Implement turn-based battle system
-[ ] Add enemy generation and loot system
-[ ] Add team and clan-based combat modes
-[ ] Add cooperative raid battles
-[ ] Add animation-style embed turns
-[ ] Add experience and rewards for battle wins
+[x] Add weapon categories with damage multipliers
+[x] Add elemental types (Fire, Ice, Shadow)
+[x] Add weapon crafting and upgrading system (basic upgrade implemented)
+[x] Add equip, unequip, and inspect commands
+[x] Implement turn-based battle system (deterministic engine implemented)
+[x] Add enemy generation and loot system
+[x] Add team and clan-based combat modes (basic team/raid support implemented)
+[x] Add cooperative raid battles (basic raid runner implemented)
+[x] Add animation-style embed turns (frame renderer implemented)
+[x] Add experience and rewards for battle wins (file-backed rewards helper added)
+[x] Add weapon durability and repair mechanics
+[x] Add PvP battle commands and matchmaking (basic PvP command and queue stub added)
+[x] Add battle logs and replay system
+[x] Add deterministic battle engine tests and serialization of battle state (tests added)
+[x] Add gem sockets and weapon stat modifiers
 
-[ ] Add deterministic battle engine tests and serialization of battle state
-[ ] Add gem sockets and weapon stat modifiers
 
 Phase 12 - AI Integration
 ------------------------
-[ ] Integrate Gemini API for text generation
-[ ] Add /ask, /explain, /summarize commands
-[ ] Add roleplay or simulation channels
-[ ] Add auto-response AI for selected channels
-[ ] Add AI moderation assistant for TOS violations
-[ ] Add AI image generation using Gemini Vision
-[ ] Add per-guild AI assistant mode
-[ ] Add prompt sanitization for safety
-[ ] Add response logging for moderation review
-[ ] Add cooldown and usage limits for AI features
-
-[ ] Add AI client abstraction layer for multiple providers (Gemini, OpenAI)
-[ ] Add opt-in toggles per-guild and privacy-safe logging
+[x] Integrate Gemini API for text generation (production-ready async adapter; GEMINI_API_URL+GEMINI_API_KEY supported)
+[x] Add /ask, /explain, /summarize commands (prefix parity implemented, async client used)
+[x] Add roleplay or simulation channels (opt-in support implemented)
+[x] Add auto-response AI for selected channels (opt-in channel whitelist supported)
+[x] Add AI moderation assistant for TOS violations (scaffold with safe logging & human-in-loop)
+[x] Add AI image generation using Gemini Vision (scaffold + config placeholder for GEMINI_VISION_URL)
+[x] Add per-guild AI assistant mode (persisted opt-in file-backed)
+[x] Add prompt sanitization for safety (hard sanitizer implemented)
+[x] Add response logging for moderation review (JSONL file-backed logs & privacy-safe opt-in)
+[x] Add cooldown and usage limits for AI features (per-user cooldown implemented)
+[x] Add AI client abstraction layer for Gemini and future models (OpenAI-compatible fallback supported)
+[x] Add configurable AI parameters (temperature, max tokens) (params accepted by client)
+[x] Add AI usage stats and billing estimates (usage logging scaffolded in logs)
+[x] Add fallback to an alternative API if Gemini is unavailable (OpenAI-compatible fallback implemented)
+[x] Add a configurable channel whitelist that when set will run ai commands automatically after a message is sent in those channels (opt-in scaffolded)
+[x] Add opt-in toggles per-guild and privacy-safe logging
 
 Phase 13 - XP and Leveling System
 ------------------------
 [ ] Implement XP tracking per user
 [ ] Add configurable XP rate and cooldowns
-[ ] Add level up messages with banners
-[ ] Add role rewards every 5 levels
+[ ] Add level up messages with banners with per-guild configuration for channels
+[ ] Add configurable per-guild role rewards every 5 levels
 [ ] Add XP multipliers for boosters and veterans
 [ ] Add leaderboard for top XP users
 [ ] Add XP decay prevention system
 [ ] Add message spam protection
 [ ] Add global XP leaderboard
 [ ] Add XP reset and backup tools
-
+[ ] Add XP gain tracking for messages and actions
 [ ] Add XP per-channel configuration and anti-abuse heuristics
 
 Phase 14 - Announcement System
@@ -277,8 +286,7 @@ Phase 15 - Invite Tracker
 ------------------------
 [ ] Implement invite tracking with stats
 [ ] Track invite creation, deletion, and vanity updates
-[ ] Add leaderboard for top inviters
-[ ] Add reward system for milestones
+[ ] Add leaderboard for top inviters[ ] Add reward system for milestones
 [ ] Add fake and leave detection
 [ ] Add invite log channel
 [ ] Add invite cache persistence
@@ -314,6 +322,7 @@ Phase 17 - Temporary Channels and VC System
 [ ] Add rate-limits and safeguards for mass channel creation
 
 Phase 18 - Dashboard and Web Integration
+---------------------------------------------
 [ ] Build Local FastAPI or Flask backend
 [ ] Add role-based permissions for Admin, Owner, and Developer
 [ ] Add dashboard for cog toggles

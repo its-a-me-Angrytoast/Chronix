@@ -33,9 +33,7 @@ forest:
       type: gem
       rarity: rare
       weight: 15
-<<<<<<< HEAD
-=======
-
+      
 spring_festival:
   coins:
     min: 50
@@ -57,4 +55,3 @@ spring_festival:
       type: misc
       rarity: legendary
       weight: 2
->>>>>>> Cursor-Branch

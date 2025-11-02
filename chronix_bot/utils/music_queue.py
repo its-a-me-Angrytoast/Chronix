@@ -36,20 +36,44 @@ def list_queue(guild_id: int) -> List[Dict[str, Any]]:
 
 
 def enqueue(guild_id: int, track: Dict[str, Any]) -> None:
+    """Enqueue a track. Supports optional 'priority' (int) and will record
+    a queued_at timestamp for FIFO ordering within the same priority.
+    """
+    import time
     with _lock:
         d = _load()
         arr = d.setdefault(str(guild_id), [])
+        # normalize fields
+        if "priority" not in track:
+            track["priority"] = int(track.get("priority", 0) or 0)
+        track.setdefault("queued_at", int(time.time()))
         arr.append(track)
+        # persist
         _save(d)
 
 
 def dequeue(guild_id: int):
+    """Dequeue the highest priority (largest priority number). Within the
+    same priority, earlier queued items are favored (FIFO).
+    Returns the removed item or None if empty.
+    """
     with _lock:
         d = _load()
         arr = d.get(str(guild_id), [])
         if not arr:
             return None
-        item = arr.pop(0)
+        # pick best index
+        best_idx = 0
+        for i in range(1, len(arr)):
+            a = arr[i]
+            b = arr[best_idx]
+            # compare priority then queued_at
+            if int(a.get("priority", 0)) > int(b.get("priority", 0)):
+                best_idx = i
+            elif int(a.get("priority", 0)) == int(b.get("priority", 0)):
+                if int(a.get("queued_at", 0)) < int(b.get("queued_at", 0)):
+                    best_idx = i
+        item = arr.pop(best_idx)
         d[str(guild_id)] = arr
         _save(d)
         return item

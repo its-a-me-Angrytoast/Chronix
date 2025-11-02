@@ -15,8 +15,22 @@ from chronix_bot.utils import db as db_utils
 def main() -> None:
     settings = Settings()
 
+    # Developer startup banner and FAST_SYNC support
+    FAST_SYNC = os.getenv("FAST_SYNC", "false").lower() in ("1", "true", "yes")
+    if settings.DEV_MODE:
+        banner = r"""
+  ____ _                   _
+ / ___| |__   __ _ _ __ __| | ___ _ __
+| |   | '_ \ / _` | '__/ _` |/ _ \ '__|
+| |___| | | | (_| | | | (_| |  __/ |
+ \____|_| |_|\__,_|_|  \__,_|\___|_|
+
+ Chronix - dev mode: fast sync=%s
+""" % (FAST_SYNC,)
+        print(banner)
+
     # Initialize DB pool and run migrations if DATABASE_URL is provided
-    if settings.DATABASE_URL:
+    if settings.DATABASE_URL and not FAST_SYNC:
         try:
             # Import here to avoid adding asyncpg at module import time unnecessarily
             from scripts.run_migrations import apply_migrations
@@ -33,6 +47,9 @@ def main() -> None:
             print("DB pool initialized and migrations applied (if any).")
         except Exception as e:
             print("Failed to initialize DB pool or run migrations:", e)
+    else:
+        if FAST_SYNC:
+            print("FAST_SYNC enabled: skipping DB initialization and migrations.")
 
     bot = create_bot(settings)
     token = settings.TOKEN

@@ -130,7 +130,9 @@ async def fetch_lyrics(query: str) -> Optional[str]:
                         pass
                     else:
                         js = await r.json()
-                        return js.get("lyrics")
+                        lyrics = js.get("lyrics")
+                        if lyrics:
+                            return (lyrics, "lyrics.ovh")
         except Exception:
             pass
 
@@ -143,6 +145,9 @@ async def fetch_lyrics(query: str) -> Optional[str]:
                 if r2.status != 200:
                     return None
                 js2 = await r2.json()
-                return js2.get("lyrics")
+                lyrics = js2.get("lyrics")
+                if lyrics:
+                    return (lyrics, "some-random-api.ml")
+                return None
     except Exception:
         return None

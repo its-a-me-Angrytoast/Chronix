@@ -1,0 +1,4 @@
+{
+  "reminder_set": "I'll remind you in {when}: {message}",
+  "warned": "{member} was warned. Reason: {reason}"
+}

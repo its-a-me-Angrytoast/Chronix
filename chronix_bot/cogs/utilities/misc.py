@@ -32,6 +32,9 @@ from discord import app_commands
 
 from chronix_bot.utils import helpers
 from chronix_bot.utils import reminders as reminders_store
+from pathlib import Path
+import hashlib
+import json
 
 
 class Misc(commands.Cog):
@@ -147,13 +150,49 @@ class Misc(commands.Cog):
         if len(parts) < 2:
             await ctx.send("Provide a question and at least one option separated by `|`.")
             return
+        # support an optional close:Xd suffix token to auto-close the poll
         question = parts[0]
         options = parts[1:][:10]
+        close_seconds = None
+        # detect tokens like close:1h or close:30m placed as last option
+        if options:
+            last = options[-1]
+            if last.startswith("close:"):
+                dur = last.split(":", 1)[1]
+                try:
+                    close_seconds = helpers.parse_duration(dur)
+                    # remove the token from options
+                    options = options[:-1]
+                except Exception:
+                    close_seconds = None
         emojis = ["1️⃣","2️⃣","3️⃣","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣","9️⃣","🔟"]
         desc = "\n".join(f"{emojis[i]} {opt}" for i, opt in enumerate(options))
         msg = await ctx.send(embed=helpers.make_embed(f"Poll: {question}", desc))
         for i in range(len(options)):
             await msg.add_reaction(emojis[i])
+
+        # schedule auto-close if requested
+        if close_seconds and close_seconds > 0:
+            self.bot.loop.create_task(self._auto_close_poll(msg, options, emojis[: len(options)], close_seconds, ctx.channel))
+
+    async def _auto_close_poll(self, msg: discord.Message, options, emojis, delay: int, channel: discord.abc.Messageable):
+        await asyncio.sleep(delay)
+        try:
+            # fetch fresh message to get reactions
+            m = await channel.fetch_message(msg.id)
+            results = []
+            for i, e in enumerate(emojis):
+                count = 0
+                for r in m.reactions:
+                    if getattr(r.emoji, "name", None) == getattr(e, "name", None) or str(r.emoji) == str(e):
+                        count = r.count - (1 if r.me else 0)
+                        break
+                results.append((options[i] if i < len(options) else str(i+1), count))
+            # build summary
+            lines = [f"{emojis[i]} {opt} — {cnt} votes" for i, (opt, cnt) in enumerate(results)]
+            await channel.send(embed=helpers.make_embed("Poll Closed", "\n".join(lines)))
+        except Exception:
+            pass
 
     # ----- reminders and timers
     @commands.command(name="remind")
@@ -168,6 +207,23 @@ class Misc(commands.Cog):
         entry = reminders_store.add_reminder(ctx.author.id, when_ts, message, guild_id=ctx.guild.id if ctx.guild else None)
         # schedule background task
         self.bot.loop.create_task(self._deliver_reminder(entry))
+        # Try to render the target time in user's configured timezone if present
+        tz_file = Path.cwd() / "data" / "timezones.json"
+        if tz_file.exists():
+            try:
+                d = json.loads(tz_file.read_text(encoding="utf-8"))
+                tz = d.get(str(ctx.author.id))
+                if tz:
+                    try:
+                        from zoneinfo import ZoneInfo
+                        local = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(when_ts))
+                        # best-effort: show UTC and TZ
+                        await ctx.send(embed=helpers.make_embed("Reminder set", f"I'll remind you in {when}: {message} (ID: {entry['id']})\nTarget time (server local): {local}\nTimezone: {tz}"))
+                        return
+                    except Exception:
+                        pass
+            except Exception:
+                pass
         await ctx.send(embed=helpers.make_embed("Reminder set", f"I'll remind you in {when}: {message} (ID: {entry['id']})"))
 
     async def _deliver_reminder(self, entry: dict):
@@ -195,6 +251,96 @@ class Misc(commands.Cog):
         msg = await ctx.send(embed=helpers.make_embed("Timer started", f"Timer: {duration} — I'll ping when done."))
         await asyncio.sleep(seconds)
         await ctx.send(embed=helpers.make_embed("Timer finished", f"{ctx.author.mention} timer for {duration} finished."))
+
+    @commands.command(name="paste")
+    async def paste(self, ctx: commands.Context, *, content: Optional[str] = None):
+        """Create a local paste file from provided content or the last message attachment.
+
+        If content is omitted and the invoking message has attachments, the first
+        attachment is downloaded and saved as a paste. The paste is returned as
+        a file attachment to the user.
+        """
+        data_dir = Path.cwd() / "data" / "pastes"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        if content:
+            txt = content
+        else:
+            # try to use message attachments
+            if ctx.message.attachments:
+                att = ctx.message.attachments[0]
+                try:
+                    txt = await att.read()
+                    if isinstance(txt, bytes):
+                        try:
+                            txt = txt.decode("utf-8")
+                        except Exception:
+                            txt = str(txt)
+                except Exception:
+                    await ctx.send("Failed to read attachment.")
+                    return
+            else:
+                await ctx.send("No content provided and no attachment found.")
+                return
+
+        # create a filename based on hash
+        h = hashlib.sha1(txt.encode("utf-8") if isinstance(txt, str) else txt).hexdigest()
+        fname = data_dir / f"paste_{h[:10]}.txt"
+        try:
+            with fname.open("w", encoding="utf-8") as f:
+                f.write(txt if isinstance(txt, str) else str(txt))
+            await ctx.send("Created paste:", file=discord.File(fp=str(fname), filename=fname.name))
+        except Exception as e:
+            await ctx.send(f"Failed to create paste: {e}")
+
+    @commands.command(name="set_timezone")
+    async def set_timezone(self, ctx: commands.Context, tz: Optional[str] = None):
+        """Set your preferred timezone (IANA name) for reminder displays. e.g. set_timezone Europe/London"""
+        data_dir = Path.cwd() / "data"
+        tz_file = data_dir / "timezones.json"
+        data_dir.mkdir(parents=True, exist_ok=True)
+        try:
+            if tz is None:
+                # clear
+                if tz_file.exists():
+                    d = json.loads(tz_file.read_text(encoding="utf-8"))
+                    d.pop(str(ctx.author.id), None)
+                    tz_file.write_text(json.dumps(d, indent=2), encoding="utf-8")
+                await ctx.send("Cleared your timezone preference.")
+                return
+            # validate using zoneinfo
+            try:
+                from zoneinfo import ZoneInfo
+                _ = ZoneInfo(tz)
+            except Exception:
+                await ctx.send("Invalid timezone. Provide an IANA timezone like Europe/London or America/New_York.")
+                return
+            if tz_file.exists():
+                d = json.loads(tz_file.read_text(encoding="utf-8"))
+            else:
+                d = {}
+            d[str(ctx.author.id)] = tz
+            tz_file.write_text(json.dumps(d, indent=2), encoding="utf-8")
+            await ctx.send(f"Timezone set to {tz}")
+        except Exception as e:
+            await ctx.send(f"Failed to set timezone: {e}")
+
+    @commands.command(name="show_timezone")
+    async def show_timezone(self, ctx: commands.Context, member: Optional[discord.Member] = None):
+        """Show the stored timezone for a user (default: you)."""
+        target = member or ctx.author
+        tz_file = Path.cwd() / "data" / "timezones.json"
+        if not tz_file.exists():
+            await ctx.send("No timezone set.")
+            return
+        try:
+            d = json.loads(tz_file.read_text(encoding="utf-8"))
+            tz = d.get(str(target.id))
+            if not tz:
+                await ctx.send(f"No timezone set for {target.display_name}.")
+                return
+            await ctx.send(f"Timezone for {target.display_name}: {tz}")
+        except Exception as e:
+            await ctx.send(f"Failed to read timezone: {e}")
 
 
 async def setup(bot: commands.Bot):

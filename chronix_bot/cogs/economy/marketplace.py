@@ -158,6 +158,78 @@ class Marketplace(commands.Cog):
         embed = helpers.make_embed("Marketplace Listings", "\n".join(lines[:20]))
         await ctx.send(embed=embed)
 
+    @commands.command(name="sell_crate")
+    async def sell_crate(self, ctx: commands.Context, crate_type: str, price: int):
+        """List an unopened crate for sale: chro sell_crate <crate_type> <price>
+
+        This will consume one unopened crate from the seller and create a
+        marketplace listing with the special item payload `unopened_crate:<type>`.
+        """
+        if price <= 0:
+            await ctx.send("Price must be positive")
+            return
+
+        # try to consume a crate using async inventory helpers
+        try:
+            from chronix_bot.utils.inventory import async_consume_unopened_crate
+        except Exception:
+            async_consume_unopened_crate = None
+
+        consumed = None
+        if async_consume_unopened_crate is not None:
+            try:
+                consumed = await async_consume_unopened_crate(ctx.author.id, crate_type)
+            except Exception:
+                consumed = None
+
+        # If DB-backed path didn't return a consumed crate, try synchronous fallback
+        if consumed is None:
+            try:
+                from chronix_bot.utils.inventory import consume_unopened_crate
+                consumed = consume_unopened_crate(ctx.author.id, crate_type)
+            except Exception:
+                consumed = None
+
+        if consumed is None:
+            await ctx.send("You have no unopened crates of that type to sell.")
+            return
+
+        item_desc = f"unopened_crate:{crate_type}:{consumed.get('crate_id')}"
+        # Reuse existing listing creation logic
+        async with _lock:
+            pool = db.get_pool()
+            if pool is not None:
+                nid = await _write_market_db({"seller_id": ctx.author.id, "item": item_desc, "price": price})
+            else:
+                data = await _read_market()
+                nid = max((l.get("id", 0) for l in data), default=0) + 1
+                entry = {"id": nid, "seller_id": ctx.author.id, "item": item_desc, "price": price}
+                data.append(entry)
+                await _write_market(data)
+
+        await ctx.send(embed=helpers.make_embed("Crate Listed", f"Listing ID: {nid}\n{crate_type} — {helpers.format_chrons(price)}"))
+
+    @commands.command(name="my_unopened")
+    async def my_unopened(self, ctx: commands.Context):
+        """Show your unopened crates."""
+        try:
+            from chronix_bot.utils.inventory import async_list_unopened_crates
+        except Exception:
+            async_list_unopened_crates = None
+
+        if async_list_unopened_crates is not None:
+            crates = await async_list_unopened_crates(ctx.author.id)
+        else:
+            from chronix_bot.utils.inventory import list_unopened_crates
+            crates = list_unopened_crates(ctx.author.id)
+
+        if not crates:
+            await ctx.send("You have no unopened crates.")
+            return
+
+        lines = [f"ID:{c.get('crate_id')} — {c.get('crate_type')}" for c in crates]
+        await ctx.send(embed=helpers.make_embed("Your Unopened Crates", "\n".join(lines)))
+
     @commands.command(name="buy")
     async def buy(self, ctx: commands.Context, listing_id: int):
         """Buy a marketplace listing by ID."""
@@ -183,6 +255,22 @@ class Marketplace(commands.Cog):
                         await db.safe_execute_money_transaction(buyer_id, price, f"market refund {listing_id}")
                         await ctx.send("Purchase failed while crediting seller; refunded.")
                         return
+                    # deliver unopened crate item to buyer if applicable
+                    item = row["item"]
+                    try:
+                        if isinstance(item, str) and item.startswith("unopened_crate:"):
+                            _, ctype, cid = item.split(":", 2)
+                            try:
+                                from chronix_bot.utils.inventory import async_add_unopened_crate
+                            except Exception:
+                                async_add_unopened_crate = None
+                            if async_add_unopened_crate is not None:
+                                await async_add_unopened_crate(buyer_id, ctype)
+                            else:
+                                from chronix_bot.utils.inventory import add_unopened_crate
+                                add_unopened_crate(buyer_id, ctype)
+                    except Exception:
+                        pass
                     await conn.execute("DELETE FROM marketplace_listings WHERE id = $1", listing_id)
                     await ctx.send(embed=helpers.make_embed("Purchase Complete", f"You bought **{row['item']}** for {helpers.format_chrons(price)}"))
             return
@@ -210,6 +298,23 @@ class Marketplace(commands.Cog):
                 await db.safe_execute_money_transaction(buyer_id, price, f"market refund {listing_id}")
                 await ctx.send("Purchase failed while crediting seller; refunded.")
                 return
+
+            # deliver unopened crate to buyer if needed
+            item = listing.get("item")
+            try:
+                if isinstance(item, str) and item.startswith("unopened_crate:"):
+                    _, ctype, cid = item.split(":", 2)
+                    try:
+                        from chronix_bot.utils.inventory import async_add_unopened_crate
+                    except Exception:
+                        async_add_unopened_crate = None
+                    if async_add_unopened_crate is not None:
+                        await async_add_unopened_crate(buyer_id, ctype)
+                    else:
+                        from chronix_bot.utils.inventory import add_unopened_crate
+                        add_unopened_crate(buyer_id, ctype)
+            except Exception:
+                pass
 
             data = [l for l in data if l.get("id") != listing_id]
             await _write_market(data)
