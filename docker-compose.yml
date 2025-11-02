@@ -11,6 +11,11 @@ services:
       - postgres_data:/var/lib/postgresql/data
     ports:
       - "5432:5432"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U chronix -d chronix"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   lavalink:
     image: fredboat/lavalink:latest
@@ -23,11 +28,15 @@ services:
   chronix:
     build: .
     depends_on:
-      - postgres
-      - lavalink
+      postgres:
+        condition: service_healthy
+      lavalink:
+        condition: service_started
     environment:
-      TOKEN: "${TOKEN:-}"
+      DISCORD_TOKEN: "${DISCORD_TOKEN:-}"
       OWNER_ID: "${OWNER_ID:-}"
+      DEV_GUILD_ID: "${DEV_GUILD_ID:-}"
+      PREFIX: "${PREFIX:-chro}"
       DATABASE_DSN: "${DATABASE_DSN:-postgres://chronix:chronixpass@postgres:5432/chronix}"
       POSTGRES_HOST: "${POSTGRES_HOST:-postgres}"
       POSTGRES_PORT: "${POSTGRES_PORT:-5432}"
@@ -36,6 +45,14 @@ services:
       POSTGRES_PASSWORD: "${POSTGRES_PASSWORD:-chronixpass}"
       LAVALINK_HOST: "${LAVALINK_HOST:-lavalink}"
       LAVALINK_PORT: "${LAVALINK_PORT:-2333}"
+      GEMINI_API_URL: "${GEMINI_API_URL:-}"
+      GEMINI_API_KEY: "${GEMINI_API_KEY:-}"
+      OPENAI_API_URL: "${OPENAI_API_URL:-}"
+      OPENAI_API_KEY: "${OPENAI_API_KEY:-}"
+      ENABLE_AI: "${ENABLE_AI:-false}"
+      ENABLE_MUSIC: "${ENABLE_MUSIC:-true}"
+    volumes:
+      - ./data:/app/data
     ports:
       - "8080:8080"
 
