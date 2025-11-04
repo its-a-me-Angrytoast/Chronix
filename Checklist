@@ -310,39 +310,52 @@ Phase 16 - Welcome System
 
 Phase 17 - Temporary Channels and VC System
 ------------------------
-[ ] Add panel to create temporary voice and text channels
-[ ] Add auto-deletion for inactive temp channels
-[ ] Add custom naming pattern using username
-[ ] Add category-based segregation for temp channels
-[ ] Add persistence toggle for reusable channels
-[ ] Add creation and deletion logs
-[ ] Add participant tracking for temporary VCs
-[ ] Add limit controls for max channels per user
-[ ] Add voice activity tracking for XP rewards
-[ ] Add cleanup script for orphaned channels
-[ ] Add rate-limits and safeguards for mass channel creation
+[x] Add panel to create temporary voice and text channels
+[x] Add auto-deletion for inactive temp channels
+[x] Add custom naming pattern using username
+[x] Add category-based segregation for temp channels
+[x] Add persistence toggle for reusable channels
+[x] Add creation and deletion logs
+[x] Add participant tracking for temporary VCs
+[x] Add limit controls for max channels per user
+[x] Add voice activity tracking for XP rewards
+[x] Add cleanup script for orphaned channels
+[x] Add rate-limits and safeguards for mass channel creation
+
+Production hardening applied:
+- Persisted creation events for guild/user rate-limiting and auditing
+- In-memory join tracking and `tempvc_voice_activity` event dispatch for reward hooks
+- Deletion semaphore to pace channel deletions and avoid API bursts
+- Safe history inspection with permission fallbacks and logging
 
 Phase 18 - Dashboard and Web Integration
 ---------------------------------------------
-[ ] Build Local FastAPI or Flask backend
-[ ] Add role-based permissions for Admin, Owner, and Developer
-[ ] Add dashboard for cog toggles
-[ ] Add configuration panels for XP, Economy, and Roles
+[x] Build Local FastAPI backend (full dashboard implemented under `chronix_bot/dashboard`)
+[x] Add role-based permissions for Admin, Owner, and Developer (owner/dev checks via `OWNER_ID` and `DEV_IDS`)
+[x] Add dashboard for cog toggles (UI + actions file + worker skeleton)
+[x] Add configuration panels for XP, Economy, and Roles (per-guild config UI + API)
+[x] Add health endpoints and readiness checks
+[x] OAuth intentionally removed for local-owner-only operation (no external OAuth flows enabled)
+[x] Add templated UI (Jinja2) and CSS for a clean visual theme
+[ ] Add production deployment docs (Docker/Helm) and CI pipeline for integration tests
+[ ] Use CSS and JS frameworks for responsive design (Bootstrap/Tailwind)
+[x] Make a beautiful modern ui/ux (initial polish: gradients, hover states, sidebar)
+[x] add dark/light mode compatibility (theme picker scaffold + CSS vars; can be expanded)
+[ ] start dashboard in a web browser on bot startup
 [ ] Add moderation log viewer
 [ ] Add announcement creation module
 [ ] Add live database stats and cache viewer
-[ ] Add restart and reload control from dashboard
-[ ] Add logging for all dashboard actions
-[ ] Add API endpoints for programmatic management and webhooks
+[x] Add restart and reload control from dashboard
+[x] Add logging for all dashboard actions
+[x] Add API endpoints for programmatic management and webhooks
 [ ] Build FastAPI backend (local & container-ready)
-[ ] Add OAuth2 login with Discord (server and bot scopes)
 [ ] Add dashboard for cog toggles, enable/disable per-guild
 [ ] Add configuration panels for XP, Economy, Roles, and Moderation
 [ ] Add moderation log viewer with filtering and export
 [ ] Add announcement builder with preview and scheduling
 [ ] Add live database stats, cache viewer, and basic metrics
 [ ] Add restart, reload, and health control endpoints (safe access only)
-[ ] Add structured action & audit logging for dashboard activity
+[x] Add structured action & audit logging for dashboard activity
 [ ] Add webhook receiver and forwarder (incoming/outgoing integrations)
 [ ] Add API key management and RBAC for programmatic access
 [ ] Add health endpoints `/health` and `/ready` and metrics `/metrics`
@@ -553,3 +566,110 @@ Phase 32 - GitHub Copilot Autonomous Enhancement
 END OF CHECKLIST
 
 After this,There Bot will have its stable release
+
+do it here
+
+Phase 33 - Suggestions & Improvements
+-------------------------------------
+a final curated list of improvements, hardening items, and developer/operational tasks to take Chronix from "feature-complete" to "production-ready". Prioritized items that reduced risk, improved developer experience, and increased reliability.
+
+Code quality & tooling
+-----------------------
+[ ] Add and enforce formatting and linting: Black, isort, flake8/ruff.
+[ ] Add type checking with mypy and enforce via CI for committed code.
+[ ] Add pre-commit hooks (black, isort, ruff/mypy, safety) and document contribution flow.
+[ ] Run static analysis and security linters (Bandit, ruff security rules).
+
+Testing & CI
+------------
+[ ] Add GitHub Actions workflows: fast-test (PR), full-test (nightly), integration (with Postgres+Lavalink), and publish pipeline.
+[ ] Create a Docker Compose test environment for integration tests (Postgres, Lavalink) and reuse it in CI.
+[ ] Increase test coverage threshold; add tests for critical transactional flows (economy, autohunt, battles).
+[ ] Add end-to-end integration tests that run against real Postgres and Lavalink in CI.
+[ ] Add smoke tests for startup, cog load, and command sync.
+
+Database & Migrations
+---------------------
+[ ] Adopt Alembic (or formal migration tool) for versioned DB migrations; add CI migration checks.
+[ ] Add migration test job in CI that applies migrations to a fresh DB and runs schema validation.
+[ ] Add regular DB backups and a restore playbook (automate in Ops docs).
+[ ] Audit and add missing indices for common queries (leaderboards, lookups, joins).
+
+Security & Secrets
+------------------
+[ ] Move secrets into a secrets manager for production (Vault/AWS Secrets Manager/GCP Secret Manager) and document the flow.
+[ ] Add dependency scanning (safety, Snyk) to CI and block known-vulnerable packages.
+[ ] Add automated secrets detection in commits (prevent accidental leaks).
+[ ] Harden bot permissions: document minimal OAuth scopes and required guild permissions.
+
+Reliability & Observability
+----------------------------
+[ ] Integrate structured logging and a centralized sink (files -> log rotation or external logging: Datadog/ELK).
+[ ] Add metrics exporting (Prometheus) and dashboards for key signals (queue lengths, autohunt rate, command errors, memory/cpu).
+[ ] Add Sentry (or equivalent) for error reporting with contextual breadcrumbs and user IDs obfuscated.
+[ ] Define SLOs and alerting rules (e.g., health endpoint fail/latency, background task errors).
+
+Performance & Scaling
+---------------------
+[ ] Add optional Redis cache for hotspot data (leaderboards, guild configs) and document cache invalidation strategy.
+[ ] Load-test core flows (autohunt scheduler, battle resolution) and identify contention points.
+[ ] Optimize DB transactions (SELECT FOR UPDATE use) and add connection pooling guidance for asyncpg.
+[ ] Add rate-limiting for expensive owner-only ops and mass actions to avoid API spikes.
+
+Deployment & Ops
+-----------------
+[ ] Improve Docker image by pinning base images and adding non-root user, healthchecks, and multi-stage builds.
+[ ] Add a `docker-compose.prod.yml` with recommended volumes, networks, and environment file structure.
+[ ] Provide Helm charts or Kubernetes manifests for production deployments (readiness/liveness, autoscaling).
+[ ] Add runbooks for common ops: restart bot, restore DB, rotate token, revoke compromised tokens.
+
+Backups & Data Retention
+------------------------
+[ ] Define and implement backup retention policies for Postgres and file-backed data.
+[ ] Add data export commands (JSONL) and a scheduled archival job.
+[ ] Add pruning for logs and old DB rows (retention/archival scripts).
+
+UX, Accessibility & I18n
+------------------------
+[ ] Audit embed colors and contrast for accessibility; document fallback themes for dark/light modes.
+[ ] Expand i18n coverage; add translation pipelines and tests for missing keys.
+[ ] Add keyboard-friendly and mobile-friendly embed interactions (button fallbacks and timeouts).
+
+Developer Experience
+--------------------
+[ ] Add CONTRIBUTING.md, CODE_OF_CONDUCT.md, and PR/Issue templates.
+[ ] Add a developer quick-start (README dev section) that boots the compose stack and runs tests.
+[ ] Add a lightweight `chronix-cli` helper for common dev tasks (run migrations, seed data, run tests).
+[ ] Provide seeded sample data (example guild, users, items) for easier local development.
+
+Release & Versioning
+--------------------
+[ ] Adopt semantic versioning and add a CHANGELOG.md with release notes template.
+[ ] Add release workflow to build/publish Docker images and tag releases.
+[ ] Add GitHub Releases checklist with upgrade notes and backward-incompatible changes.
+
+Community & Governance
+----------------------
+[ ] Add CODEOWNERS for core directories and maintainers list.
+[ ] Document contribution process and triage guidelines for maintainers.
+[ ] Create security disclosure instructions and contact for vulnerability reporting.
+
+Roadmap & Prioritization
+------------------------
+[ ] Convert high-priority suggestions above into tracked issues and milestones in the repo.
+[ ] Create a lightweight project board (GitHub Projects) for quarterly goals.
+[ ] Schedule periodic architecture reviews to avoid technical debt accumulation.
+
+Optional Advanced Improvements
+------------------------------
+[ ] Add plugin architecture to allow runtime extension of cogs with safe sandboxing.
+[ ] Add multi-region deployment docs and strategies for disaster recovery.
+[ ] Implement feature flags (e.g., Unleash/Flagsmith) to gradually roll out risky features.
+[ ] Add observability-driven auto-scaling guidelines for heavy guild loads.
+
+Acceptance criteria for Phase 33:
+[ ] Checklist items converted into tracked issues or PRs.
+[ ] CI workflows added (fast-tests + integration) and passing on main branch.
+[ ] Production deployment playbook exists and is validated by a dry-run deployment.
+[ ] Monitoring/alerting and backups are in place for production.
+

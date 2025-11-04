@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+  <h2>Guild Configuration — {{ guild_id }}</h2>
+  <form method="post" action="/configs/guild/{{ guild_id }}">
+    <label>Welcome Channel ID</label>
+    <input name="welcome_channel" value="{{ config.get('welcome_channel', '') }}" />
+    <label>Enabled</label>
+    <select name="enabled">
+      <option value="true" {% if config.get('enabled') %}selected{% endif %}>True</option>
+      <option value="false" {% if not config.get('enabled') %}selected{% endif %}>False</option>
+    </select>
+    <button class="btn primary" type="submit">Save</button>
+  </form>
+{% endblock %}

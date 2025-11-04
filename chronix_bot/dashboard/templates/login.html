@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block content %}
+  {% if user %}
+    <h2>Logged in as {{ user.username }}#{{ user.discriminator }}</h2>
+    <p>You are now authenticated. Return to the <a href="/">dashboard</a>.</p>
+  {% else %}
+    <h2>Not logged in</h2>
+    <p>Discord OAuth is not configured or login failed.</p>
+    <a href="/">Return</a>
+  {% endif %}
+{% endblock %}

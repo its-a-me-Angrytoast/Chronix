@@ -1,0 +1,5 @@
+{
+  "default_theme": "amber",
+  "allow_self_restart": false,
+  "dashboard_poll_interval": 6
+}

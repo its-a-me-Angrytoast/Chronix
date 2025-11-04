@@ -8,12 +8,14 @@ def _fake_member(guild_name="TestGuild", name="Alice", display_name="Alice"):
         name = guild_name
 
     class M:
-        guild = G()
-        name = name
-        display_name = display_name
-        mention = "@Alice"
+        pass
 
-    return M()
+    m = M()
+    m.guild = G()
+    m.name = name
+    m.display_name = display_name
+    m.mention = "@Alice"
+    return m
 
 
 def test_format_message_basic():

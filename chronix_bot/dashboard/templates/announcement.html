@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Create Announcement</h1>
+  <p class="lead">Create and queue an announcement for posting.</p>
+  <form id="ann-form">
+    <label>Title</label>
+    <input name="title" />
+    <label>Body</label>
+    <textarea name="body" rows="6"></textarea>
+    <label>Post to (guild id or 'broadcast')</label>
+    <input name="target" placeholder="broadcast" />
+    <button class="btn primary" type="submit">Queue</button>
+  </form>
+  <script>
+    document.getElementById('ann-form').addEventListener('submit', async (e)=>{
+      e.preventDefault(); const f=e.currentTarget; const payload={title:f.title.value, body:f.body.value, target:f.target.value||'broadcast'}; const r=await fetch('/announcements/create',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)}); if(r.ok) alert('Queued'); else alert('Failed');
+    });
+  </script>
+{% endblock %}

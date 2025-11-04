@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Cogs</h1>
+  <p class="lead">Manage bot cogs — enable or disable extensions safely.</p>
+  <div id="cogs-root">
+    <div id="cog-list" class="cards"></div>
+  </div>
+
+  <template id="cog-card-tpl">
+    <div class="card cog-card" data-description="">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <h3 class="cog-name"><span class="icon">🧩</span><span class="label">Cog</span></h3>
+          <div class="cog-desc" style="color:var(--muted);font-size:13px;margin-top:6px"></div>
+        </div>
+        <div>
+          <span class="cog-badge" style="padding:6px 8px;border-radius:8px;background:rgba(255,255,255,0.02);font-size:13px">Unknown</span>
+        </div>
+      </div>
+      <div class="cog-actions" style="margin-top:12px">
+        <button class="btn primary enable">Enable</button>
+        <button class="btn warn" data-action="disable">Disable</button>
+        <button class="btn info" data-action="reload">Reload</button>
+        <a class="btn" data-action="details">Details</a>
+      </div>
+    </div>
+  </template>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      initCogs('/cogs', '/cogs/{cog}/enable', '/cogs/{cog}/disable');
+      // when clicking card body, do not redirect; keep action buttons for interactions
+      document.getElementById('cog-list').addEventListener('click', (e)=>{
+        const target = e.target;
+        // prevent anchor default on details buttons
+        if(target.tagName === 'A' && target.dataset && target.dataset.action === 'details'){
+          e.preventDefault();
+          const href = target.getAttribute('href');
+          // open details in new lightweight panel
+          window.location = href;
+        }
+      });
+    });
+  </script>
+{% endblock %}

@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Chronix Dashboard (Local)</h1>
+  <p class="lead">This dashboard is intended for local owner use only. It will only accept requests from <code>localhost</code>.</p>
+  <section class="cards">
+    <div class="card">
+      <h3>Server Configs</h3>
+      <p>Manage per-guild Chronix settings.</p>
+      <button class="btn info" data-action="open-configs">Open</button>
+    </div>
+    <div class="card">
+      <h3>Cog Management</h3>
+      <p>Enable or disable cogs (actions are recorded and the bot must apply them).</p>
+      <button class="btn primary" data-action="open-cogs">Manage</button>
+    </div>
+    <div class="card" id="uptime-card">
+      <h3>Uptime</h3>
+      <p><strong id="uptime">—</strong></p>
+    </div>
+    <div class="card" id="server-count-card">
+      <h3>Server Count</h3>
+      <p><strong id="server-count">—</strong></p>
+    </div>
+    <div class="card" id="ping-card">
+      <h3>Ping</h3>
+      <p><strong id="ping">—</strong></p>
+    </div>
+    <div class="card">
+      <h3>Instance Controls</h3>
+      <div style="display:flex;gap:8px">
+        <button class="btn primary" data-action="start">Start</button>
+        <button class="btn warn" data-action="stop">Stop</button>
+        <button class="btn danger" data-action="restart">Restart</button>
+      </div>
+    </div>
+  </section>
+
+  <div class="note">Owner: <code>{{ owner_id or 'configured locally' }}</code></div>
+
+  <div style="margin-top:18px">
+    <h3>Important Info</h3>
+    <ul>
+      <li>Dashboard data dir: <code>{{ data_dir }}</code></li>
+      <li>Dashboard mode: <strong>Local Owner</strong></li>
+      <li>Python: <code>{{ py_ver }}</code></li>
+    </ul>
+  </div>
+
+  <script>
+    // measure ping and update uptime
+    async function measure(){
+      try{
+        const t0 = performance.now();
+        const r = await fetch('/ping');
+        const t1 = performance.now();
+        const data = await r.json();
+        document.getElementById('ping').textContent = Math.round(t1-t0) + ' ms';
+        // uptime from server start (in seconds)
+        const start = {{ start_time | default('null') }};
+        if(start){
+          const up = Math.floor(Date.now()/1000 - start);
+          const h = Math.floor(up/3600); const m = Math.floor((up%3600)/60); const s = up%60;
+          document.getElementById('uptime').textContent = `${h}h ${m}m ${s}s`;
+        }
+        // fetch live server count from metrics endpoint
+        try{
+          const res2 = await fetch('/metrics/server_count');
+          if(res2.ok){ const j = await res2.json(); document.getElementById('server-count').textContent = (j.server_count != null) ? String(j.server_count) : '—'; }
+        }catch(e){ /* ignore */ }
+      }catch(e){console.warn(e)}
+    }
+    document.addEventListener('DOMContentLoaded', ()=>{ measure(); setInterval(measure,5000); });
+  </script>
+
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Guild Configs</h1>
+  <p class="lead">View or edit saved per-guild configs.</p>
+  <div class="card">
+    <form method="get" action="/configs/guild/">
+      <label>Guild ID</label>
+      <input name="guild_id" placeholder="Enter guild id" />
+      <button class="btn primary" type="submit">Open</button>
+    </form>
+  </div>
+  <hr />
+  <h3>Saved configs</h3>
+  <div class="cards" id="saved-configs"></div>
+  <script>
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      try{
+        const res = await fetch('/configs/list');
+        if(!res.ok) return;
+        const data = await res.json();
+        const c = document.getElementById('saved-configs');
+        c.innerHTML = '';
+        (data.configs||[]).forEach(gid=>{
+          const el = document.createElement('div'); el.className='card';
+          const btn = document.createElement('button'); btn.className='btn info'; btn.textContent='Open'; btn.addEventListener('click', ()=>{ window.location='/configs/guild/'+gid; });
+          el.innerHTML = `<strong>Guild ${gid}</strong> `;
+          el.appendChild(btn);
+          c.appendChild(el);
+        });
+      }catch(e){console.warn(e)}
+    });
+  </script>
+{% endblock %}

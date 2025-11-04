@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Version</h1>
+  <p class="lead">Chronix Dashboard</p>
+  <div class="card">
+    <p>Version: <strong>{{ version }}</strong></p>
+    <p>Uptime: <span id="ver-uptime">—</span></p>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+      try{
+        const start = {{ start_time | default('null') }};
+        if(start){ const up = Math.floor(Date.now()/1000 - start); const h=Math.floor(up/3600); const m=Math.floor((up%3600)/60); const s=up%60; document.getElementById('ver-uptime').textContent = `${h}h ${m}m ${s}s`; }
+      }catch(e){}
+    });
+  </script>
+{% endblock %}

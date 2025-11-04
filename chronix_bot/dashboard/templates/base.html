@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Chronix Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+  <nav class="nav">
+    <div style="display:flex;align-items:center;gap:12px">
+      <button id="sidebar-toggle" class="btn" aria-label="Toggle sidebar">☰</button>
+      <div class="brand">Chronix</div>
+    </div>
+    <div class="nav-user" style="display:flex;gap:10px;align-items:center">
+      <button id="theme-toggle" class="btn" aria-label="Toggle light/dark">🌙</button>
+      <div style="display:flex;align-items:center;gap:8px">
+        <span id="pending-actions" style="font-size:13px;color:var(--muted);">Pending: <strong id="pending-count">0</strong></span>
+      </div>
+      <span class="user">Local Owner Dashboard</span>
+    </div>
+  </nav>
+
+  <div class="layout">
+    <aside id="sidebar" class="sidebar">
+      <ul>
+        <li class="nav-item"><a href="/"><span class="icon">🏠</span><span class="label">Home</span></a></li>
+  <li class="nav-item"><a href="/cogs/ui"><span class="icon">🧩</span><span class="label">Cogs</span></a></li>
+  <li class="nav-item"><a href="/configs/ui"><span class="icon">🛠️</span><span class="label">Guilds</span></a></li>
+  <li class="nav-item"><a href="/owner"><span class="icon">👑</span><span class="label">Owner</span></a></li>
+  <li class="nav-item"><a href="/dev"><span class="icon">🧪</span><span class="label">Dev</span></a></li>
+  <li class="nav-item"><a href="/health"><span class="icon">❤️</span><span class="label">Health</span></a></li>
+  <li class="nav-item"><a href="/info"><span class="icon">📦</span><span class="label">Info</span></a></li>
+      </ul>
+    </aside>
+
+    <main class="container content" id="main-content">
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  <footer class="footer">Chronix Dashboard — lightweight admin</footer>
+  <script src="/static/app.js"></script>
+  <script>
+    // If a page needs to call a page-init function (e.g. initCogs), it can do so inline.
+    // Initialize sidebar behaviour after app.js loads.
+    document.addEventListener('DOMContentLoaded', ()=>{
+      if(window.initSidebar) window.initSidebar();
+      // wire theme toggle UI
+      try{
+        const btn = document.getElementById('theme-toggle');
+        if(btn){
+          btn.addEventListener('click', ()=>{
+            const cur = localStorage.getItem('chronix.theme_mode') || 'dark';
+            const next = cur === 'dark' ? 'light' : 'dark';
+            try{ localStorage.setItem('chronix.theme_mode', next); }catch(e){}
+            if(next === 'light') document.documentElement.classList.add('theme-light'); else document.documentElement.classList.remove('theme-light');
+            btn.textContent = next === 'light' ? '☀️' : '🌙';
+          });
+          // set initial state from storage
+          const mode = localStorage.getItem('chronix.theme_mode') || 'dark';
+          if(mode === 'light') document.documentElement.classList.add('theme-light');
+          btn.textContent = mode === 'light' ? '☀️' : '🌙';
+        }
+      }catch(e){}
+      // begin polling pending actions
+      if(window.updatePendingActions) window.updatePendingActions();
+    });
+  </script>
+</body>
+</html>
+

@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Info</h1>
+  <p class="lead">Instance information and theme selector.</p>
+  <div class="cards">
+    <div class="card">
+      <h3>Version</h3>
+      <p><strong>{{ version }}</strong></p>
+    </div>
+    <div class="card">
+      <h3>Themes</h3>
+      <p>Pick a color theme for the dashboard.</p>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button class="btn primary" data-theme="green">Green</button>
+        <button class="btn info" data-theme="blue">Blue</button>
+        <button class="btn warn" data-theme="amber">Amber</button>
+      </div>
+    </div>
+    <div class="card">
+      <h3>Settings</h3>
+      <p>Persisted dashboard settings (saved on the server).</p>
+      <label>Default theme</label>
+      <select id="setting-default-theme">
+        <option value="green">Green</option>
+        <option value="blue">Blue</option>
+        <option value="amber">Amber</option>
+      </select>
+      <label style="margin-top:8px">Allow self-restart (supervised only)</label>
+      <select id="setting-allow-restart"><option value="false">Disabled</option><option value="true">Enabled</option></select>
+      <label style="margin-top:8px">Dashboard poll interval (seconds)</label>
+      <input id="setting-poll-interval" type="number" min="1" />
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <button id="save-settings" class="btn primary">Save</button>
+        <button id="reset-settings" class="btn">Reset</button>
+      </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', async ()=>{
+      document.querySelectorAll('[data-theme]').forEach(b=>b.addEventListener('click', ()=>{
+        const t = b.getAttribute('data-theme');
+        try{ localStorage.setItem('chronix.theme', t); }catch(e){}
+        if(window.applyTheme) window.applyTheme(t);
+      }));
+      try{ const saved = localStorage.getItem('chronix.theme'); if(saved && window.applyTheme) window.applyTheme(saved);}catch(e){}
+
+      // load persisted settings
+      try{
+        const res = await fetch('/settings');
+        if(res.ok){
+            const j = await res.json(); const s = j.settings || {};
+            if(s.default_theme) document.getElementById('setting-default-theme').value = s.default_theme;
+            if(typeof s.allow_self_restart !== 'undefined') document.getElementById('setting-allow-restart').value = String(!!s.allow_self_restart);
+            if(s.dashboard_poll_interval) document.getElementById('setting-poll-interval').value = s.dashboard_poll_interval;
+        }
+      }catch(e){}
+
+      document.getElementById('save-settings').addEventListener('click', async ()=>{
+        const payload = {
+          default_theme: document.getElementById('setting-default-theme').value,
+          allow_self_restart: document.getElementById('setting-allow-restart').value === 'true',
+          dashboard_poll_interval: Number(document.getElementById('setting-poll-interval').value) || 6
+        };
+        try{
+          const r = await fetch('/settings', {method:'PUT', headers:{'content-type':'application/json'}, body: JSON.stringify(payload)});
+          if(r.ok) alert('Settings saved'); else alert('Failed to save');
+        }catch(e){ alert('Failed to save: '+e.message); }
+      });
+
+      document.getElementById('reset-settings').addEventListener('click', ()=>{ localStorage.removeItem('chronix.theme'); if(window.applyTheme) window.applyTheme(document.querySelector('[data-theme]').getAttribute('data-theme')); alert('Local theme reset'); });
+    });
+  </script>
+{% endblock %}

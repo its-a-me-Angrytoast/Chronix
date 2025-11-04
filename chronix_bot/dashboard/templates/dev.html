@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Developer Panel</h1>
+  <p class="lead">Developer utilities: debug toggles and diagnostics.</p>
+  <div class="cards">
+    <div class="card">
+      <h3>Diagnostics</h3>
+      <p>Quick actions to gather logs and debug data.</p>
+      <div style="display:flex;gap:8px">
+          <a class="btn info" href="/console/ui">Open Console</a>
+          <a class="btn" href="/console/download">Download Logs</a>
+        </div>
+    </div>
+  </div>
+  <script>
+    document.addEventListener('DOMContentLoaded', ()=>{
+  // download link handled by anchor to /console/download
+    });
+  </script>
+{% endblock %}

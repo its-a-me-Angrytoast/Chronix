@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block content %}
+  <h1>Health</h1>
+  <p class="lead">Service liveness and basic checks.</p>
+  <div class="cards">
+    <div class="card">
+      <h3>Liveness</h3>
+      <p>Status: <strong>{{ status }}</strong></p>
+    </div>
+    <div class="card">
+      <h3>Uptime</h3>
+      <p id="hc-uptime">—</p>
+    </div>
+  </div>
+  <script>
+    async function load(){
+      try{
+        const r = await fetch('/ping');
+        const data = await r.json();
+        const start = {{ start_time | default('null') }};
+        if(start){ const up = Math.floor(Date.now()/1000 - start); const h=Math.floor(up/3600); const m=Math.floor((up%3600)/60); const s=up%60; document.getElementById('hc-uptime').textContent = `${h}h ${m}m ${s}s`; }
+      }catch(e){console.warn(e)}
+    }
+    document.addEventListener('DOMContentLoaded', load);
+  </script>
+{% endblock %}
