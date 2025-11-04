@@ -108,5 +108,5 @@ This project is provided under the LICENSE in the repository root.
 
 ---
 
-If you'd like, I can also wire up a minimal GitHub Actions workflow to run the tests and build the Docker image on push.
+
 
