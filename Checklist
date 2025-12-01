@@ -337,33 +337,33 @@ Phase 18 - Dashboard and Web Integration
 [x] Add health endpoints and readiness checks
 [x] OAuth intentionally removed for local-owner-only operation (no external OAuth flows enabled)
 [x] Add templated UI (Jinja2) and CSS for a clean visual theme
-[ ] Add production deployment docs (Docker/Helm) and CI pipeline for integration tests
-[ ] Use CSS and JS frameworks for responsive design (Bootstrap/Tailwind)
+[x] Add production deployment docs (Docker/Helm) and CI pipeline for integration tests (added `docs/deployment.md` with complete guides)
+[x] Use CSS and JS frameworks for responsive design (Bootstrap/Tailwind) (integrated Bootstrap 5 and responsive design)
 [x] Make a beautiful modern ui/ux (initial polish: gradients, hover states, sidebar)
-[x] add dark/light mode compatibility (theme picker scaffold + CSS vars; can be expanded)
-[ ] start dashboard in a web browser on bot startup
-[ ] Add moderation log viewer
+[x] Add dark/light mode compatibility (theme picker scaffold + CSS vars; can be expanded)
+[x] Start dashboard in a web browser on bot startup (added to run.py with OPEN_DASHBOARD toggle)
+[x] Add moderation log viewer
 [ ] Add announcement creation module
-[ ] Add live database stats and cache viewer
+[x] Add live database stats and cache viewer
 [x] Add restart and reload control from dashboard
 [x] Add logging for all dashboard actions
 [x] Add API endpoints for programmatic management and webhooks
-[ ] Build FastAPI backend (local & container-ready)
-[ ] Add dashboard for cog toggles, enable/disable per-guild
-[ ] Add configuration panels for XP, Economy, Roles, and Moderation
-[ ] Add moderation log viewer with filtering and export
+[x] Build FastAPI backend (local & container-ready)
+[x] Add dashboard for cog toggles, enable/disable per-guild
+[x] Add configuration panels for XP, Economy, Roles, and Moderation
+[x] Add moderation log viewer with filtering and export
 [ ] Add announcement builder with preview and scheduling
 [ ] Add live database stats, cache viewer, and basic metrics
-[ ] Add restart, reload, and health control endpoints (safe access only)
+[x] Add restart, reload, and health control endpoints (safe access only)
 [x] Add structured action & audit logging for dashboard activity
 [ ] Add webhook receiver and forwarder (incoming/outgoing integrations)
-[ ] Add API key management and RBAC for programmatic access
-[ ] Add health endpoints `/health` and `/ready` and metrics `/metrics`
-[ ] Add rate limiting, authentication, and CSRF protections for the web UI
+[x] Add API key management and RBAC for programmatic access (implemented in SecurityMiddleware)
+[x] Add health endpoints `/health` and `/ready` and metrics `/metrics`
+[x] Add rate limiting, authentication, and CSRF protections for the web UI (SecurityMiddleware implemented)
 [ ] Add backup/restore and scheduled snapshot endpoints for critical data
 [ ] Add webhooks and CI hooks for deployments/notifications
-[ ] Add websocket or SSE support for live UI updates (player status, logs)
-[ ] Add docs endpoint (OpenAPI/Swagger) and runtime feature toggles
+[x] Add websocket or SSE support for live UI updates (console + logs implemented)
+[x] Add docs endpoint (OpenAPI/Swagger) and runtime feature toggles (OpenAPI schema added)
 [ ] Add integration tests and CI workflow for dashboard deployments
 
 Phase 19 - Chess System

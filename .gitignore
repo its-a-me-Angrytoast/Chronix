@@ -152,7 +152,7 @@ celerybeat.pid
 # Environments
 .env
 .envrc
-chronix.venv
+.venv
 env/
 venv/
 ENV/
@@ -227,4 +227,4 @@ __marimo__/
 # Project files
 .github/
 f.txt
-
+gemini/

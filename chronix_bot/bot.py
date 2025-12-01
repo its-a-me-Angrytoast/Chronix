@@ -154,12 +154,15 @@ class ChronixBot(commands.Bot):
                                 uptime = int(time.time() - self._start_time)
                         except Exception:
                             uptime = None
+                        
+                        is_maintenance = os.getenv('CHRONIX_DASHBOARD_MAINTENANCE', 'false').lower() in ('true', '1', 'yes')
                         payload = {
                             'server_count': guild_count,
                             'extensions': ext_count,
                             'uptime': uptime,
                             'ts': int(time.time()),
-                            'pid': os.getpid()
+                            'pid': os.getpid(),
+                            'maintenance_mode': is_maintenance
                         }
                         # write the JSON file for the dashboard to read
                         stats_file.write_text(json.dumps(payload, ensure_ascii=False), encoding='utf-8')
@@ -175,72 +178,139 @@ class ChronixBot(commands.Bot):
         # Optional simple RPC server to accept immediate apply requests from the dashboard.
         # This server is bound to localhost by default and accepts an X-API-Key header if configured.
         async def _start_rpc_server():
-            if web is None:
+            if os.getenv('CHRONIX_DASHBOARD_STANDALONE', 'false').lower() in ('true', '1', 'yes'):
+                print("Internal dashboard server disabled (CHRONIX_DASHBOARD_STANDALONE is set).")
                 return
+
+            try:
+                import uvicorn
+                from fastapi import FastAPI, Request, Response
+                from fastapi.responses import JSONResponse, FileResponse
+                from fastapi.staticfiles import StaticFiles
+                from fastapi.middleware.cors import CORSMiddleware
+            except ImportError:
+                print("FastAPI or Uvicorn not installed. Dashboard RPC/hosting disabled.")
+                return
+
             try:
                 rpc_host = os.getenv('CHRONIX_DASHBOARD_RPC_HOST', '127.0.0.1')
                 rpc_port = int(os.getenv('CHRONIX_DASHBOARD_RPC_PORT', '9091'))
                 api_key = os.environ.get('CHRONIX_DASHBOARD_API_KEY')
 
-                app_rpc = web.Application()
+                app = FastAPI(openapi_url=None, docs_url=None, redoc_url=None)
 
-                async def _consume_handler(req: web.Request):
-                    # allow only localhost by default
-                    peer = req.remote
+                # Basic CORS setup
+                app.add_middleware(
+                    CORSMiddleware,
+                    allow_origins=["*"],
+                    allow_credentials=True,
+                    allow_methods=["*"],
+                    allow_headers=["*"],
+                )
+
+                @app.post('/rpc/consume')
+                async def _consume_handler(request: Request):
+                    # Security checks
+                    client_host = request.client.host if request.client else "unknown"
                     local_hosts = ('127.0.0.1', '::1', 'localhost')
-                    # API key check for non-local clients
-                    if peer not in local_hosts and api_key:
-                        key = req.headers.get('X-API-Key')
+                    if client_host not in local_hosts and api_key:
+                        key = request.headers.get('X-API-Key')
                         if not key or key != api_key:
-                            return web.json_response({'status': 'unauthorized'}, status=401)
-                    # if the bot exposes a consumer dispatcher, accept posted actions and dispatch them
-                    try:
-                        data = None
-                        try:
-                            data = await req.json()
-                        except Exception:
-                            data = None
+                            return JSONResponse({'status': 'unauthorized'}, status_code=401)
 
-                        actions = None
-                        if isinstance(data, dict) and data.get('actions'):
-                            actions = data.get('actions')
-                        # If actions were provided, try to dispatch them immediately using the consumer dispatch hook
-                        dispatch = getattr(self, '_dashboard_consumer_dispatch', None)
-                        if actions and dispatch:
-                            # dispatch may be coroutine
+                    try:
+                        data = await request.json()
+                    except Exception:
+                        data = None
+
+                    actions = None
+                    if isinstance(data, dict) and data.get('actions'):
+                        actions = data.get('actions')
+
+                    # Check for maintenance mode
+                    if os.getenv('CHRONIX_DASHBOARD_MAINTENANCE', 'false').lower() in ('true', '1', 'yes'):
+                        if actions:
+                            return JSONResponse({
+                                'status': 'error',
+                                'message': 'Maintenance mode active. Changes are not saved.'
+                            }, status_code=503)
+
+                    # Dispatch actions
+                    dispatch = getattr(self, '_dashboard_consumer_dispatch', None)
+                    if actions and dispatch:
+                        try:
                             res = dispatch(actions)
                             if hasattr(res, '__await__'):
                                 results = await res
                             else:
                                 results = res
-                            return web.json_response({'status': 'ok', 'results': results})
+                            return JSONResponse({'status': 'ok', 'results': results})
+                        except Exception:
+                            return JSONResponse({'status': 'error'}, status_code=500)
 
-                        # No actions provided or no dispatcher available: fall back to simple trigger
-                        trigger = getattr(self, '_dashboard_consumer_trigger', None)
-                        if trigger:
-                            res = trigger()
-                            if hasattr(res, '__await__'):
-                                # schedule trigger asynchronously
-                                self.loop.create_task(res)
-                        else:
-                            # no consumer loaded yet — fallback: write a consume_now action file
-                            data_dir = Path(os.environ.get('CHRONIX_DATA_DIR', Path(__file__).parents[2] / 'data'))
-                            trig = data_dir / 'dashboard_trigger'
-                            try:
-                                trig.write_text(str(time.time()), encoding='utf-8')
-                            except Exception:
-                                pass
-                        return web.json_response({'status': 'ok'})
-                    except Exception:
-                        return web.json_response({'status': 'error'}, status=500)
+                    # Fallback trigger
+                    trigger = getattr(self, '_dashboard_consumer_trigger', None)
+                    if trigger:
+                        res = trigger()
+                        if hasattr(res, '__await__'):
+                            self.loop.create_task(res)
+                    else:
+                        data_dir = Path(os.environ.get('CHRONIX_DATA_DIR', Path(__file__).parents[2] / 'data'))
+                        try:
+                            (data_dir / 'dashboard_trigger').write_text(str(time.time()), encoding='utf-8')
+                        except Exception:
+                            pass
+                    return JSONResponse({'status': 'ok'})
 
-                app_rpc.router.add_post('/rpc/consume', _consume_handler)
+                @app.get('/api/stats')
+                async def _get_stats():
+                    data_dir = Path(os.environ.get('CHRONIX_DATA_DIR', Path(__file__).parents[2] / 'data'))
+                    stats_file = data_dir / 'dashboard_stats.json'
+                    if stats_file.exists():
+                        try:
+                            content = json.loads(stats_file.read_text(encoding='utf-8'))
+                            # Add explicit ping if not in file (calculated here or passed from bot)
+                            # For now, just return what's in the file. The bot loop writes uptime/server_count.
+                            # The ping command in bot.py calculates latency but doesn't write it to the file.
+                            # We can rely on the client to fetch latency or just show uptime/servers.
+                            return JSONResponse(content)
+                        except Exception:
+                            pass
+                    return JSONResponse({'server_count': 0, 'uptime': 0, 'extensions': 0, 'maintenance_mode': False})
 
-                runner = web.AppRunner(app_rpc)
-                await runner.setup()
-                site = web.TCPSite(runner, rpc_host, rpc_port)
-                await site.start()
-                print(f"Started dashboard RPC server on {rpc_host}:{rpc_port}")
+                # Serve Dashboard Static Files
+                dashboard_dist = Path(os.environ.get('CHRONIX_DASHBOARD_BUILD_DIR', Path(__file__).parents[2] / 'dashboard' / 'dist'))
+                if dashboard_dist.exists() and dashboard_dist.is_dir():
+                    # Mount assets
+                    assets_path = dashboard_dist / 'assets'
+                    if assets_path.exists():
+                        app.mount("/assets", StaticFiles(directory=str(assets_path)), name="assets")
+
+                    # Serve root files
+                    for root_file in ['favicon.ico', 'manifest.json', 'robots.txt', 'logo192.png', 'logo512.png']:
+                         if (dashboard_dist / root_file).exists():
+                             # capture variable in default arg
+                             @app.get(f"/{root_file}")
+                             async def _serve_root(rf=root_file): 
+                                 return FileResponse(dashboard_dist / rf)
+
+                    # SPA Catch-all (serves index.html for any other route)
+                    @app.get("/{full_path:path}")
+                    async def _serve_spa(full_path: str):
+                        return FileResponse(dashboard_dist / 'index.html')
+
+                    print(f"Serving dashboard from {dashboard_dist}")
+                else:
+                    print(f"Dashboard build not found at {dashboard_dist}. Run 'npm run build' in dashboard/ directory.")
+
+                # Start Uvicorn
+                config = uvicorn.Config(app, host=rpc_host, port=rpc_port, log_level="info")
+                server = uvicorn.Server(config)
+                # IMPORTANT: Prevent uvicorn from overwriting signal handlers (Ctrl+C), let discord.py handle it
+                server.install_signal_handlers = lambda: None
+                
+                print(f"Started dashboard FastAPI server on {rpc_host}:{rpc_port}")
+                await server.serve()
             except Exception as e:
                 print('Failed to start dashboard RPC server:', e)
 

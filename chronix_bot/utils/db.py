@@ -13,10 +13,22 @@ import contextlib
 import logging
 from datetime import datetime
 import asyncio
+import os
+from pathlib import Path
 
 import asyncpg
 
 logger = logging.getLogger("chronix.db")
+
+def get_db_url() -> str:
+    """Get database URL from environment or use SQLite for development."""
+    db_url = os.environ.get("DATABASE_URL")
+    if not db_url:
+        # Use SQLite for development
+        db_path = Path(__file__).parents[2] / "data" / "chronix.db"
+        db_path.parent.mkdir(parents=True, exist_ok=True)
+        return f"sqlite:///{db_path}"
+    return db_url
 
 _pool: Optional[asyncpg.pool.Pool] = None
 

@@ -107,6 +107,34 @@
     {
       "op": "consume_now",
       "ts": 1762109667.442595
+    },
+    {
+      "op": "consume_now",
+      "ts": 1762270256.4786963
+    },
+    {
+      "op": "owner.force_reload_all",
+      "ts": 1762270262.7502549
+    },
+    {
+      "op": "instance.start",
+      "ts": 1762270725.9158664
+    },
+    {
+      "op": "consume_now",
+      "ts": 1762436453.7910066
+    },
+    {
+      "op": "owner.force_reload_all",
+      "ts": 1762436460.6189747
+    },
+    {
+      "op": "consume_now",
+      "ts": 1762436463.71627
+    },
+    {
+      "op": "hot_reload",
+      "ts": 1762436467.3975382
     }
   ]
 }

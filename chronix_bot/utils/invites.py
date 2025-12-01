@@ -171,7 +171,7 @@ async def increment_invite_use(guild_id: int, code: str, joined_user_id: Optiona
             counts = data.get("counts", {})
             key = f"{guild_id}:{inviter}"
             existing = counts.get(key, {})
-            # support legacy integer format
+            # support older integer format
             if isinstance(existing, int):
                 existing = {"invites": int(existing), "fake": 0, "left": 0}
 

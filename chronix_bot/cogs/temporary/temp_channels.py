@@ -262,7 +262,7 @@ class TempChannels(commands.Cog):
 
 
 async def _channels_keys() -> List[str]:
-    # legacy helper kept for compatibility with existing callers; prefer get_all_channel_ids
+    # compatibility helper kept for backwards-compatibility with existing callers; prefer get_all_channel_ids
     ids = await tempvc.get_all_channel_ids()
     return [str(x) for x in ids]
 

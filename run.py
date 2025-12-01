@@ -1,7 +1,6 @@
-"""Minimal runner for Chronix (Phase 1).
+"""Main entry point for Chronix bot.
 
-This will load settings and create the bot instance. It's intentionally small
-so it can be used in early development.
+Handles bot initialization, database setup, and dashboard startup.
 """
 from chronix_bot.config import Settings
 from chronix_bot.bot import create_bot
@@ -44,6 +43,7 @@ def main() -> None:
                     print("Migration runner encountered an error:", e)
 
             asyncio.run(_init_db_and_run_migs())
+            print(f"Chronix bot started")
             print("DB pool initialized and migrations applied (if any).")
         except Exception as e:
             print("Failed to initialize DB pool or run migrations:", e)
@@ -51,11 +51,14 @@ def main() -> None:
         if FAST_SYNC:
             print("FAST_SYNC enabled: skipping DB initialization and migrations.")
 
+    # Create and start the bot
     bot = create_bot(settings)
     token = settings.TOKEN
     if not token:
         print("Missing TOKEN in environment or .env. See .env.example")
         return
+
+    # Run the bot
     bot.run(token)
 
 

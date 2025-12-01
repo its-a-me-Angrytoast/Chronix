@@ -107,6 +107,3 @@ SQL migrations are in `migrations/`; apply them to your Postgres instance when r
 This project is provided under the LICENSE in the repository root.
 
 ---
-
-
-

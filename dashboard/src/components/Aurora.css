@@ -1,0 +1,10 @@
+.aurora-container {
+  position: fixed; /* Fixed to cover viewport even when scrolling */
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  background: radial-gradient(ellipse at top, #1e1b4b 0%, #09090b 100%); /* Deep blue to black base */
+  pointer-events: none;
+}

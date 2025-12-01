@@ -1,0 +1,1159 @@
+{
+  "results": [
+    [
+      "/",
+      200,
+      "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n        <meta charset=\"UTF-8\">\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n        <title>Chronix Dashboard</title>\n        <link rel=\"stylesheet\" href=\"/static/swagger-ui.css\">\n        <link rel=\"stylesheet\" href=\"/static/style.css\">\n        <link rel=\"icon\" href=\"/static/favicon.ico\" />\n        \n        <style>\n            /* small fallback to ensure content is readable if external css fails */\n            .container{ma"
+    ],
+    [
+      "/health",
+      200,
+      {
+        "status": "ok"
+      }
+    ],
+    [
+      "/ready",
+      200,
+      {
+        "status": "ready"
+      }
+    ],
+    [
+      "/db/status",
+      200,
+      {
+        "status": "healthy",
+        "connection_pool": {
+          "in_use": 0,
+          "available": 10
+        },
+        "tables": {
+          "users": 0,
+          "items": 0,
+          "transactions": 0
+        }
+      }
+    ],
+    [
+      "/docs",
+      200,
+      "\n    <!DOCTYPE html>\n    <html>\n    <head>\n    <link type=\"text/css\" rel=\"stylesheet\" href=\"/static/swagger-ui.css\">\n    <link rel=\"shortcut icon\" href=\"https://fastapi.tiangolo.com/img/favicon.png\">\n    <title>Chronix Dashboard API Documentation</title>\n    </head>\n    <body>\n    <div id=\"swagger-ui\">\n    </div>\n    <script src=\"/static/swagger-ui-bundle.js\"></script>\n    <!-- `SwaggerUIBundle` is now available on the page -->\n    <script>\n    const ui = SwaggerUIBundle({\n        url: '/openapi"
+    ],
+    [
+      "/openapi.json",
+      200,
+      {
+        "openapi": "3.1.0",
+        "info": {
+          "title": "Chronix Dashboard",
+          "version": "0.1.0"
+        },
+        "paths": {
+          "/db/status": {
+            "get": {
+              "tags": [
+                "database"
+              ],
+              "summary": "Get Db Status",
+              "description": "Get current database status.\n\nReturns:\n    Dict[str, Any]: Database status information",
+              "operationId": "get_db_status_db_status_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Response Get Db Status Db Status Get"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/db/backup": {
+            "post": {
+              "tags": [
+                "database"
+              ],
+              "summary": "Create Backup",
+              "description": "Create a new database backup.\n\nReturns:\n    Dict[str, str]: Backup status information",
+              "operationId": "create_backup_db_backup_post",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "additionalProperties": {
+                          "type": "string"
+                        },
+                        "type": "object",
+                        "title": "Response Create Backup Db Backup Post"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/modlogs/recent": {
+            "get": {
+              "tags": [
+                "modlogs"
+              ],
+              "summary": "Get Recent Logs",
+              "description": "Get recent moderation logs.\n\nArgs:\n    limit: Maximum number of logs to return\n    guild_id: Optional guild ID to filter by\n    \nReturns:\n    List[Dict[str, Any]]: List of recent moderation logs",
+              "operationId": "get_recent_logs_modlogs_recent_get",
+              "parameters": [
+                {
+                  "name": "limit",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                    "type": "integer",
+                    "maximum": 100,
+                    "default": 50,
+                    "title": "Limit"
+                  }
+                },
+                {
+                  "name": "guild_id",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                    "type": "string",
+                    "title": "Guild Id"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "additionalProperties": true
+                        },
+                        "title": "Response Get Recent Logs Modlogs Recent Get"
+                      }
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/modlogs/stats": {
+            "get": {
+              "tags": [
+                "modlogs"
+              ],
+              "summary": "Get Modlog Stats",
+              "description": "Get moderation statistics.\n\nArgs:\n    guild_id: Optional guild ID to filter by\n    \nReturns:\n    Dict[str, Any]: Moderation statistics",
+              "operationId": "get_modlog_stats_modlogs_stats_get",
+              "parameters": [
+                {
+                  "name": "guild_id",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                    "type": "string",
+                    "title": "Guild Id"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "type": "object",
+                        "additionalProperties": true,
+                        "title": "Response Get Modlog Stats Modlogs Stats Get"
+                      }
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/api/status": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Api Status",
+              "description": "Return a minimal bot status structure used by the frontend.",
+              "operationId": "api_status_api_status_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "additionalProperties": true,
+                        "type": "object",
+                        "title": "Response Api Status Api Status Get"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/settings": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Get Settings",
+              "operationId": "get_settings_settings_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            },
+            "put": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Put Settings",
+              "operationId": "put_settings_settings_put",
+              "requestBody": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "additionalProperties": true,
+                      "type": "object",
+                      "title": "Payload"
+                    }
+                  }
+                },
+                "required": true
+              },
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/actions/pending": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Get Pending Actions",
+              "operationId": "get_pending_actions_actions_pending_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/actions/list": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Actions List",
+              "operationId": "actions_list_actions_list_get",
+              "parameters": [
+                {
+                  "name": "page",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                    "type": "integer",
+                    "default": 1,
+                    "title": "Page"
+                  }
+                },
+                {
+                  "name": "per_page",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                    "type": "integer",
+                    "default": 50,
+                    "title": "Per Page"
+                  }
+                },
+                {
+                  "name": "op",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                    "type": "string",
+                    "title": "Op"
+                  }
+                },
+                {
+                  "name": "cog",
+                  "in": "query",
+                  "required": false,
+                  "schema": {
+                    "type": "string",
+                    "title": "Cog"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/actions/apply_now": {
+            "post": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Actions Apply Now",
+              "operationId": "actions_apply_now_actions_apply_now_post",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/actions/clear": {
+            "post": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Actions Clear",
+              "operationId": "actions_clear_actions_clear_post",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/actions/ui": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Actions Ui",
+              "operationId": "actions_ui_actions_ui_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "text/html": {
+                      "schema": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/cogs": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "List Cogs",
+              "operationId": "list_cogs_cogs_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/cogs/status": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Cogs Status",
+              "operationId": "cogs_status_cogs_status_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/cogs/meta": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Cogs Meta",
+              "operationId": "cogs_meta_cogs_meta_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/cogs/{name}/{op}": {
+            "post": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Cog Action",
+              "operationId": "cog_action_cogs__name___op__post",
+              "parameters": [
+                {
+                  "name": "name",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                    "type": "string",
+                    "title": "Name"
+                  }
+                },
+                {
+                  "name": "op",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                    "type": "string",
+                    "title": "Op"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/cogs/config/{cog}": {
+            "put": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Put Cog Config",
+              "operationId": "put_cog_config_cogs_config__cog__put",
+              "parameters": [
+                {
+                  "name": "cog",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                    "type": "string",
+                    "title": "Cog"
+                  }
+                }
+              ],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "title": "Payload"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/cogs/{cog}/action/{action_name}": {
+            "post": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Cog Custom Action",
+              "operationId": "cog_custom_action_cogs__cog__action__action_name__post",
+              "parameters": [
+                {
+                  "name": "cog",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                    "type": "string",
+                    "title": "Cog"
+                  }
+                },
+                {
+                  "name": "action_name",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                    "type": "string",
+                    "title": "Action Name"
+                  }
+                }
+              ],
+              "requestBody": {
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "title": "Payload"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/instance/{action}": {
+            "post": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Instance Control",
+              "operationId": "instance_control_instance__action__post",
+              "parameters": [
+                {
+                  "name": "action",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                    "type": "string",
+                    "title": "Action"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/users/{user_id}": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Get User Profile",
+              "operationId": "get_user_profile_users__user_id__get",
+              "parameters": [
+                {
+                  "name": "user_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                    "type": "integer",
+                    "title": "User Id"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            },
+            "put": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Put User Profile",
+              "operationId": "put_user_profile_users__user_id__put",
+              "parameters": [
+                {
+                  "name": "user_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                    "type": "integer",
+                    "title": "User Id"
+                  }
+                }
+              ],
+              "requestBody": {
+                "required": true,
+                "content": {
+                  "application/json": {
+                    "schema": {
+                      "type": "object",
+                      "additionalProperties": true,
+                      "title": "Payload"
+                    }
+                  }
+                }
+              },
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/users/{user_id}/ui": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "User Profile Ui",
+              "operationId": "user_profile_ui_users__user_id__ui_get",
+              "parameters": [
+                {
+                  "name": "user_id",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                    "type": "integer",
+                    "title": "User Id"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "text/html": {
+                      "schema": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/metrics/server_count": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Metrics Server Count",
+              "operationId": "metrics_server_count_metrics_server_count_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/ping": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Ping",
+              "operationId": "ping_ping_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/owner": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Owner Panel",
+              "operationId": "owner_panel_owner_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "text/html": {
+                      "schema": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/owner/rebuild_caches": {
+            "post": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Owner Rebuild Caches",
+              "operationId": "owner_rebuild_caches_owner_rebuild_caches_post",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/owner/force_reload_all": {
+            "post": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Owner Force Reload All",
+              "operationId": "owner_force_reload_all_owner_force_reload_all_post",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/cogs/ui": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Cogs Ui",
+              "operationId": "cogs_ui_cogs_ui_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "text/html": {
+                      "schema": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/configs/ui": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Configs Ui",
+              "operationId": "configs_ui_configs_ui_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "text/html": {
+                      "schema": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/cogs/{name}": {
+            "get": {
+              "tags": [
+                "ui"
+              ],
+              "summary": "Cog Detail",
+              "operationId": "cog_detail_cogs__name__get",
+              "parameters": [
+                {
+                  "name": "name",
+                  "in": "path",
+                  "required": true,
+                  "schema": {
+                    "type": "string",
+                    "title": "Name"
+                  }
+                }
+              ],
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "text/html": {
+                      "schema": {
+                        "type": "string"
+                      }
+                    }
+                  }
+                },
+                "422": {
+                  "description": "Validation Error",
+                  "content": {
+                    "application/json": {
+                      "schema": {
+                        "$ref": "#/components/schemas/HTTPValidationError"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/health": {
+            "get": {
+              "summary": "Health",
+              "description": "Health check endpoint.",
+              "operationId": "health_health_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "/ready": {
+            "get": {
+              "summary": "Ready",
+              "description": "Readiness check endpoint.",
+              "operationId": "ready_ready_get",
+              "responses": {
+                "200": {
+                  "description": "Successful Response",
+                  "content": {
+                    "application/json": {
+                      "schema": {}
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "components": {
+          "schemas": {
+            "HTTPValidationError": {
+              "properties": {
+                "detail": {
+                  "items": {
+                    "$ref": "#/components/schemas/ValidationError"
+                  },
+                  "type": "array",
+                  "title": "Detail"
+                }
+              },
+              "type": "object",
+              "title": "HTTPValidationError"
+            },
+            "ValidationError": {
+              "properties": {
+                "loc": {
+                  "items": {
+                    "anyOf": [
+                      {
+                        "type": "string"
+                      },
+                      {
+                        "type": "integer"
+                      }
+                    ]
+                  },
+                  "type": "array",
+                  "title": "Location"
+                },
+                "msg": {
+                  "type": "string",
+                  "title": "Message"
+                },
+                "type": {
+                  "type": "string",
+                  "title": "Error Type"
+                }
+              },
+              "type": "object",
+              "required": [
+                "loc",
+                "msg",
+                "type"
+              ],
+              "title": "ValidationError"
+            }
+          }
+        }
+      }
+    ],
+    [
+      "/static/style.css",
+      200,
+      "/* Modern UI styles for Chronix Dashboard */\n:root{\n  /* Base colors */\n  --bg: #071025;\n  --card: #071826;\n  --muted: #9aa4b2;\n  --accent: #10b981; /* green accent */\n  --accent-2: #16a34a;\n  --text: #e6eef6;\n  --glass: rgba(255,255,255,0.03);\n\n  /* Spacing scale */\n  --space-xs: 4px;\n  --space-sm: 8px;\n  --space-md: 16px;\n  --space-lg: 24px;\n  --space-xl: 32px;\n  --radius: 10px;\n  \n  /* Component colors */\n  --success: #10b981;\n  --info: #3b82f6;\n  --warning: #f59e0b;\n  --danger: #ef4444;\n  \n "
+    ],
+    [
+      "/static/app.js",
+      200,
+      "// Dashboard UI helper JS with improved animations and real-time updates\n// Core ajax helper with better error handling\nasync function ajax(url, opts = {}) {\n  try {\n    const res = await fetch(url, opts);\n    if (!res.ok) {\n      const txt = await res.text().catch(() => null);\n      throw new Error(`HTTP ${res.status}: ${txt || res.statusText}`);\n    }\n    const ct = res.headers.get('content-type') || '';\n    if (ct.includes('application/json')) return res.json();\n    return res.text();\n  } cat"
+    ],
+    [
+      "/cogs",
+      200,
+      {
+        "cogs": [
+          "core",
+          "economy",
+          "gameplay.hunt",
+          "music",
+          "moderation"
+        ]
+      }
+    ],
+    [
+      "/cogs/ui",
+      200,
+      "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n        <meta charset=\"UTF-8\">\n        <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\n        <title>Chronix Dashboard</title>\n        <link rel=\"stylesheet\" href=\"/static/swagger-ui.css\">\n        <link rel=\"stylesheet\" href=\"/static/style.css\">\n        <link rel=\"icon\" href=\"/static/favicon.ico\" />\n        \n        <style>\n            /* small fallback to ensure content is readable if external css fails */\n            .container{ma"
+    ],
+    [
+      "/actions/list",
+      200,
+      {
+        "actions": [],
+        "total": 0,
+        "page": 1,
+        "per_page": 50
+      }
+    ],
+    [
+      "/actions/pending",
+      200,
+      {
+        "pending": 0
+      }
+    ],
+    [
+      "/api/status",
+      200,
+      {
+        "online": true,
+        "uptime": "1d 2h",
+        "guilds": 12,
+        "commands": 342
+      }
+    ],
+    [
+      "/settings",
+      200,
+      {
+        "settings": {
+          "default_theme": "green"
+        }
+      }
+    ]
+  ]
+}
