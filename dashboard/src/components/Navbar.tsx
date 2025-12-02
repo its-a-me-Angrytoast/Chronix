@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Menu, X, Home, LayoutDashboard, BookOpen, Settings, LogIn, LogOut } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 import './Navbar.css';
 
 interface NavbarProps {
@@ -7,41 +8,9 @@ interface NavbarProps {
   setView: (view: string) => void;
 }
 
-interface User {
-  id: string;
-  username: string;
-  avatar: string | null;
-  loggedIn: boolean;
-}
-
 const Navbar = ({ currentView, setView }: NavbarProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(null);
-
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then(res => res.json())
-      .then(data => {
-        if (data.loggedIn) {
-          setUser(data);
-        }
-      })
-      .catch(err => console.error("Auth check failed", err));
-  }, []);
-
-  const handleLogin = () => {
-    window.location.href = '/api/auth/login';
-  };
-
-  const handleLogout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST' });
-      setUser(null);
-      window.location.reload();
-    } catch (error) {
-      console.error("Logout failed", error);
-    }
-  };
+  const { user, login, logout } = useAuth();
 
   const navItems = [
     { id: 'main', label: 'Main', icon: <Home size={20} /> },
@@ -71,9 +40,10 @@ const Navbar = ({ currentView, setView }: NavbarProps) => {
                     setView(item.id);
                     setIsOpen(false);
                   }}
-                  title={item.label} // Add tooltip for accessibility
+                  title={item.label}
                 >
                   {item.icon}
+                  <span>{item.label}</span>
                 </button>
               </li>
             ))}
@@ -92,12 +62,12 @@ const Navbar = ({ currentView, setView }: NavbarProps) => {
                   <div className="user-avatar-placeholder">{user.username[0]}</div>
                 )}
                 <span className="user-name">{user.username}</span>
-                <button className="btn-logout" onClick={handleLogout} title="Logout">
+                <button className="btn-logout" onClick={logout} title="Logout">
                   <LogOut size={18} />
                 </button>
               </div>
             ) : (
-              <button className="btn-login" onClick={handleLogin}>
+              <button className="btn-login" onClick={login}>
                 <LogIn size={18} />
                 <span>Login with Discord</span>
               </button>

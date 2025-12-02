@@ -1,4 +1,6 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Toaster } from 'react-hot-toast';
 import './App.css';
 import Navbar from './components/Navbar';
 import Home from './pages/Home';
@@ -7,26 +9,11 @@ import Docs from './pages/Docs';
 import Settings from './pages/Settings';
 import Dock from './components/Dock';
 import Aurora from './components/Aurora';
+import { AuthProvider } from './context/AuthContext';
 import { VscHome, VscDashboard, VscBook, VscSettingsGear } from 'react-icons/vsc';
 
-
-function App() {
+function AppContent() {
   const [currentView, setView] = useState('main');
-
-  const renderView = () => {
-    switch (currentView) {
-      case 'main':
-        return <Home setView={setView} />;
-      case 'dashboard':
-        return <Dashboard />;
-      case 'docs':
-        return <Docs />;
-      case 'settings':
-        return <Settings />;
-      default:
-        return <Home setView={setView} />;
-    }
-  };
 
   const dockItems = [
     { icon: <VscHome size={18} />, label: 'Main', onClick: () => setView('main') },
@@ -35,15 +22,28 @@ function App() {
     { icon: <VscSettingsGear size={18} />, label: 'Settings', onClick: () => setView('settings') },
   ];
 
-
   return (
     <div className="app-layout">
-      <Aurora /> {/* Aurora component as background */}
+      <Aurora />
       <Navbar currentView={currentView} setView={setView} />
       
       <div className="content-container">
         <main className="main-content">
-          {renderView()}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={currentView}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -20 }}
+              transition={{ duration: 0.3 }}
+              style={{ width: '100%' }}
+            >
+              {currentView === 'main' && <Home setView={setView} />}
+              {currentView === 'dashboard' && <Dashboard />}
+              {currentView === 'docs' && <Docs />}
+              {currentView === 'settings' && <Settings />}
+            </motion.div>
+          </AnimatePresence>
         </main>
 
         <footer className="footer">
@@ -56,7 +56,25 @@ function App() {
         panelHeight={68}
         baseItemSize={50}
       />
+      <Toaster 
+        position="top-right"
+        toastOptions={{
+          style: {
+            background: '#1e293b',
+            color: '#fff',
+            border: '1px solid #334155',
+          },
+        }}
+      />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <AuthProvider>
+      <AppContent />
+    </AuthProvider>
   );
 }
 

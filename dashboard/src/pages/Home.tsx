@@ -1,5 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { Coins, Swords, Music, Shield, Server, Activity, Zap, Terminal } from 'lucide-react';
+import { api } from '../utils/api';
 import FeatureCard from '../components/FeatureCard';
 import StatCard from '../components/StatCard';
 import '../pages/Home.css';
@@ -31,26 +32,19 @@ const Home = ({ setView }: HomeProps) => {
     uptime: null
   });
 
-  // Store the calculated boot time timestamp
   const bootTimeRef = useRef<number | null>(null);
   const [elapsedSeconds, setElapsedSeconds] = useState<number | null>(null);
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const res = await fetch('/api/stats');
-        if (res.ok) {
-          const data = await res.json();
-          setStats(data);
-          
-          if (data.uptime !== null) {
-            // If we don't have a boot time yet, or if the new uptime is significantly different (e.g. bot restart), update it
-            // We allow a 5-second drift before forcing a reset to account for network latency
-            const estimatedBootTime = Date.now() - (data.uptime * 1000);
-            
-            if (bootTimeRef.current === null || Math.abs(bootTimeRef.current - estimatedBootTime) > 5000) {
-               bootTimeRef.current = estimatedBootTime;
-            }
+        const data = await api<DashboardStats>('/api/stats');
+        setStats(data);
+        
+        if (data.uptime !== null) {
+          const estimatedBootTime = Date.now() - (data.uptime * 1000);
+          if (bootTimeRef.current === null || Math.abs(bootTimeRef.current - estimatedBootTime) > 5000) {
+             bootTimeRef.current = estimatedBootTime;
           }
         }
       } catch (error) {
@@ -60,8 +54,6 @@ const Home = ({ setView }: HomeProps) => {
 
     fetchStats();
     const pollInterval = setInterval(fetchStats, 5000);
-    
-    // Ticker updates based on local clock relative to boot time
     const tickInterval = setInterval(() => {
       if (bootTimeRef.current !== null) {
         const seconds = Math.floor((Date.now() - bootTimeRef.current) / 1000);

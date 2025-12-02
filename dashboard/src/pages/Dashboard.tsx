@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Shield, ExternalLink, Settings, Loader2, ArrowLeft, Box, Music, Coins, MessageSquare, UserPlus, Bot, ScrollText, Clock, Wrench } from 'lucide-react';
+import { api } from '../utils/api';
 import './Dashboard.css';
 
 interface Guild {
@@ -34,15 +35,7 @@ const Dashboard = () => {
   useEffect(() => {
     const fetchGuilds = async () => {
       try {
-        const res = await fetch('/api/user/guilds');
-        if (res.status === 401) {
-          setError('Please login to view your servers.');
-          setLoading(false);
-          return;
-        }
-        if (!res.ok) throw new Error('Failed to fetch servers');
-        
-        const data = await res.json();
+        const data = await api<any[]>('/api/user/guilds');
         
         const processed = data.map((g: any) => {
           const perms = BigInt(g.permissions);
@@ -56,9 +49,13 @@ const Dashboard = () => {
         });
         
         setGuilds(processed);
-      } catch (err) {
+      } catch (err: any) {
         console.error(err);
-        setError('Failed to load servers.');
+        if (err.status === 401) {
+             setError('Please login to view your servers.');
+        } else {
+             setError('Failed to load servers.');
+        }
       } finally {
         setLoading(false);
       }

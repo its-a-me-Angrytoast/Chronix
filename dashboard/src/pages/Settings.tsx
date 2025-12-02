@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Shield, Bell, Moon, Globe, Volume2, Save } from 'lucide-react';
+import { toast } from 'react-hot-toast';
 import './Settings.css';
 
 interface SettingsState {
@@ -33,7 +34,7 @@ const Settings = () => {
 
   const handleSave = () => {
     // Settings are auto-saved via useEffect, but we can show a confirmation
-    alert('Settings saved to local storage!');
+    toast.success('Settings saved to local storage!');
   };
 
   return (
