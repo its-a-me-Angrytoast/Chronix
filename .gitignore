@@ -228,3 +228,5 @@ __marimo__/
 .github/
 f.txt
 gemini/
+nginx_chronix.conf
+data/dashboard_stats.json
